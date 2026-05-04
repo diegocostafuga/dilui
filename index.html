@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calculadora de diluição de produtos químicos para limpeza">
+    <title>Diluí — Calculadora de Diluição</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L4 14C4 18.4183 7.58172 22 12 22C16.4183 22 20 18.4183 20 14L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M8 14C8 16.2091 9.79086 18 12 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>Diluí</h1>
+                    <span class="tagline">Calculadora de diluição</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Barra de progresso (escondida na tela inicial) -->
+        <div class="progress-container" id="progressContainer" aria-label="Progresso" hidden>
+            <div class="progress-info">
+                <span class="progress-label" id="progressLabel">Passo 1 de 4</span>
+                <span class="progress-percent" id="progressPercent">25%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill-bar" id="progressFillBar" style="width: 25%"></div>
+            </div>
+        </div>
+
+        <main class="main">
+
+            <!-- ============================================
+                 TELA INICIAL — Welcome
+                 ============================================ -->
+            <section class="step active welcome-step" data-step="0" aria-labelledby="welcome-title">
+                <div class="welcome-content">
+                    <div class="welcome-icon" aria-hidden="true">
+                        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="dropGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#2dd4bf"/>
+                                    <stop offset="100%" stop-color="#0d9488"/>
+                                </linearGradient>
+                            </defs>
+                            <path d="M40 8L16 44C16 58.3594 26.7452 70 40 70C53.2548 70 64 58.3594 64 44L40 8Z" fill="url(#dropGradient)" stroke="#0f766e" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M28 46C28 53.7320 33.3726 60 40 60" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+                            <circle cx="48" cy="36" r="3" fill="white" opacity="0.5"/>
+                        </svg>
+                    </div>
+
+                    <h2 id="welcome-title" class="welcome-title">Diluí</h2>
+                    <p class="welcome-tagline">Calculadora de diluição</p>
+
+                    <p class="welcome-intro">
+                        Calcule a quantidade exata de cada produto para preparar suas misturas de limpeza com precisão.
+                    </p>
+                </div>
+
+                <div class="nav-actions welcome-actions">
+                    <button class="btn-primary btn-start" data-action="start" type="button">
+                        <span>Iniciar cálculo</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 PASSO 1 — Quantidade de produtos
+                 ============================================ -->
+            <section class="step" data-step="1" aria-labelledby="step1-title">
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-eyebrow">Passo 1</span>
+                        <h2 id="step1-title" class="step-title">Quantos produtos vai misturar?</h2>
+                        <p class="step-desc">Inclua todos os componentes da mistura — a água também conta.</p>
+                    </div>
+
+                    <div class="pill-group large" role="radiogroup" aria-label="Quantidade de produtos">
+                        <button class="pill active" data-count="2" type="button" role="radio" aria-checked="true">2</button>
+                        <button class="pill" data-count="3" type="button" role="radio" aria-checked="false">3</button>
+                        <button class="pill" data-count="4" type="button" role="radio" aria-checked="false">4</button>
+                        <button class="pill" data-count="5" type="button" role="radio" aria-checked="false">5</button>
+                    </div>
+
+                    <div class="info-hint">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Selecione ao menos <strong>2 produtos</strong> para seguir com o cálculo.</span>
+                    </div>
+                </div>
+
+                <div class="nav-actions">
+                    <div></div>
+                    <button class="btn-primary" data-action="next" type="button">
+                        <span>Próximo</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 PASSO 2 — Configurar produtos
+                 ============================================ -->
+            <section class="step" data-step="2" aria-labelledby="step2-title">
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-eyebrow">Passo 2</span>
+                        <h2 id="step2-title" class="step-title">Configure cada produto</h2>
+                        <p class="step-desc">Escolha o produto e o estado físico de cada um.</p>
+                    </div>
+
+                    <div class="products-list" id="productsList"></div>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="btn-secondary" data-action="back" type="button">
+                        <svg class="btn-icon-left" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Voltar</span>
+                    </button>
+                    <button class="btn-primary" data-action="next" type="button">
+                        <span>Próximo</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 PASSO 3 — Proporção
+                 ============================================ -->
+            <section class="step" data-step="3" aria-labelledby="step3-title">
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-eyebrow">Passo 3</span>
+                        <h2 id="step3-title" class="step-title">Qual a proporção?</h2>
+                        <p class="step-desc" id="ratioHint">Use 2 partes — ex: 1/10</p>
+                    </div>
+
+                    <label class="field-label">Sugestões rápidas</label>
+                    <div class="ratio-presets" id="ratioPresets"></div>
+
+                    <label class="field-label" for="ratioInput">Ou digite sua proporção</label>
+                    <div class="input-wrapper">
+                        <input
+                            type="text"
+                            id="ratioInput"
+                            class="input large-input"
+                            placeholder="Ex: 1/10"
+                            autocomplete="off"
+                            inputmode="text"
+                        >
+                        <span class="input-icon" id="ratioStatus" aria-hidden="true"></span>
+                    </div>
+                    <p class="error-msg" id="ratioError" role="alert"></p>
+
+                    <div class="info-hint subtle">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>A proporção segue a ordem dos produtos do passo anterior.</span>
+                    </div>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="btn-secondary" data-action="back" type="button">
+                        <svg class="btn-icon-left" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Voltar</span>
+                    </button>
+                    <button class="btn-primary" data-action="next" type="button" disabled>
+                        <span>Próximo</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 PASSO 4 — Limite
+                 ============================================ -->
+            <section class="step" data-step="4" aria-labelledby="step4-title">
+                <div class="step-content">
+                    <div class="step-header">
+                        <span class="step-eyebrow">Passo 4</span>
+                        <h2 id="step4-title" class="step-title">Limite total da mistura</h2>
+                        <p class="step-desc">Capacidade do frasco ou quantidade que você precisa.</p>
+                    </div>
+
+                    <label class="field-label">Tamanhos comuns</label>
+                    <div class="pill-group preset-group" id="limitPresets">
+                        <button class="pill" data-limit="250" data-unit="mL" type="button">250 mL</button>
+                        <button class="pill" data-limit="500" data-unit="mL" type="button">500 mL</button>
+                        <button class="pill" data-limit="1" data-unit="L" type="button">1 L</button>
+                        <button class="pill" data-limit="5" data-unit="L" type="button">5 L</button>
+                    </div>
+
+                    <label class="field-label" for="limitValue">Ou personalize</label>
+                    <div class="limit-custom">
+                        <div class="input-wrapper flex-grow">
+                            <input
+                                type="number"
+                                id="limitValue"
+                                class="input large-input"
+                                placeholder="Quantidade"
+                                min="0"
+                                step="any"
+                                inputmode="decimal"
+                            >
+                        </div>
+                        <select id="limitUnit" class="select large-input" aria-label="Unidade do limite">
+                            <option value="mL">mL</option>
+                            <option value="L">L</option>
+                            <option value="g">g</option>
+                            <option value="kg">kg</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="btn-secondary" data-action="back" type="button">
+                        <svg class="btn-icon-left" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Voltar</span>
+                    </button>
+                    <button class="btn-primary btn-calculate" id="btnCalculate" data-action="calculate" type="button" disabled>
+                        <span>Calcular</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ============================================
+                 RESULTADO
+                 ============================================ -->
+            <section class="step" data-step="5" aria-labelledby="step5-title">
+                <div class="step-content">
+                    <div class="results-header">
+                        <div class="success-badge" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <h2 id="step5-title" class="results-title">Sua mistura</h2>
+                        <p class="results-subtitle" id="resultsSummary"></p>
+                    </div>
+
+                    <div class="results-list" id="resultsList"></div>
+
+                    <div class="total-card" id="totalCard"></div>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="btn-secondary" data-action="back" type="button">
+                        <svg class="btn-icon-left" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Ajustar</span>
+                    </button>
+                    <button class="btn-primary" data-action="restart" type="button">
+                        <svg class="btn-icon-left" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M1 4V10H7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3.51 15A9 9 0 1 0 6 5.3L1 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Novo cálculo</span>
+                    </button>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>Diluí · Cálculos precisos para limpeza eficaz</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
