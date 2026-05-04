@@ -1,5 +1,5 @@
 /* ============================================
-   DILUÃ â Calculadora de DiluiÃ§Ã£o
+   DILUï¿½ ï¿½ Calculadora de DiluiÃ§Ã£o
    Design tokens & base styles
    ============================================ */
 
@@ -436,7 +436,7 @@ button:focus-visible {
     margin: 0 auto;
 }
 
-.welcome-actions {
+.nav-actions.welcome-actions {
     grid-template-columns: 1fr;
 }
 
@@ -715,7 +715,7 @@ button:focus-visible {
 }
 
 /* ============================================
-   Limite â input + select combinado
+   Limite ï¿½ input + select combinado
    ============================================ */
 
 .limit-custom {
@@ -1048,7 +1048,7 @@ button:focus-visible {
 }
 
 /* ============================================
-   Animações
+   Animaï¿½ï¿½es
    ============================================ */
 
 @keyframes fadeIn {

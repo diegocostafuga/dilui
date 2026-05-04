@@ -176,7 +176,7 @@ function reiniciar() {
     dom.limitUnit.value = 'mL';
 
     atualizarBotoesNavegacao();
-    irParaPasso(0, 'back');
+    irParaPasso(1, 'forward');
 }
 
 // ============================================
