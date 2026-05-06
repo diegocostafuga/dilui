@@ -472,17 +472,27 @@ function atualizarBotoesNavegacao() {
 // CÁLCULO
 // ============================================
 
+// Escala em relação à unidade base (mL ou g). Volume<->massa usa
+// aproximação de densidade da água: 1 mL ≈ 1 g, 1 L ≈ 1 kg.
+const ESCALA_UNIDADE = { mL: 1, g: 1, L: 1000, kg: 1000 };
+
+function converterQuantidade(valor, unidadeOrigem, unidadeDestino) {
+    if (unidadeOrigem === unidadeDestino) return valor;
+    return valor * ESCALA_UNIDADE[unidadeOrigem] / ESCALA_UNIDADE[unidadeDestino];
+}
+
 function calcular(produtos, proporcoes, limiteValor, limiteUnidade) {
     const soma = proporcoes.reduce((a, b) => a + b, 0);
     const unidadeBase = limiteValor / soma;
 
     return produtos.map((produto, i) => {
-        const quantidade = proporcoes[i] * unidadeBase;
+        const quantidadeNoLimite = proporcoes[i] * unidadeBase;
+        const quantidade = converterQuantidade(quantidadeNoLimite, limiteUnidade, produto.unidade);
         const porcentagem = (proporcoes[i] / soma) * 100;
         return {
             nome: obterNomeProduto(produto),
             quantidade,
-            unidade: limiteUnidade,
+            unidade: produto.unidade,
             porcentagem
         };
     });

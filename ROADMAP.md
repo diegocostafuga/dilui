@@ -24,6 +24,7 @@
 - Proporções com sugestões adaptativas (ex: 1/10, 1/2/5)
 - Limite total com presets (250mL, 500mL, 1L, 5L) ou personalizado
 - Cálculo proporcional preciso com cards de resultado animados
+- Resultado respeita a unidade de cada produto (líquido em mL/L, pó em g/kg) com conversão automática a partir da unidade do limite — aproximação 1:1 (densidade da água) por simplicidade
 
 ### 2. Fluxo de passos navegável
 - 4 passos sequenciais com transições fluidas (slide horizontal)
@@ -200,6 +201,33 @@ Biblioteca de "receitas famosas" de mistura: limpa-piso, desinfetante natural, r
 **Quando reconsiderar**
 - Pode ser excelente conteúdo de SEO no futuro
 - Boa porta de entrada de novos usuários (busca "como fazer desinfetante caseiro" → cai na receita → conhece a calculadora)
+
+---
+
+### 7. Densidade real por produto (precisão de conversão volume↔massa)
+
+**Status:** 🔴 Polimento (não urgente)
+**Esforço:** Pouco
+**Impacto:** Baixo na prototipagem / Médio em uso profissional
+
+**Descrição**
+Hoje a conversão entre volume e massa (mL ↔ g, L ↔ kg) usa aproximação 1:1 (densidade da água). Funciona bem para limpeza doméstica, mas é impreciso para produtos como soda cáustica em pó, cloro concentrado e detergentes muito viscosos — densidades reais variam significativamente.
+
+**Como funcionaria**
+- Adicionar campo `densidade` (g/mL) em cada item de `PRODUTOS_PRECADASTRADOS`
+- Estender `converterQuantidade(valor, origem, destino, densidade)` para aplicar a densidade apenas em conversões cross-categoria (volume↔massa); conversões dentro da mesma categoria continuam puramente de escala
+- Produtos "Outro" mantêm densidade 1.0 (ou, em modo avançado, o usuário pode informar)
+- Eventualmente: tabela de densidades de referência para os principais produtos brasileiros
+
+**Por que postergar**
+- A aproximação 1:1 é mais que suficiente para o público-alvo atual (limpeza doméstica)
+- Pesquisar densidades reais e curar a tabela é trabalho de fundo que não desbloqueia ninguém
+- Sem reclamação de imprecisão de usuário real ainda
+
+**Quando reconsiderar**
+- Se o produto migrar para mercado profissional (faxina industrial, química técnica)
+- Se algum usuário reportar resultado discrepante o suficiente para causar problema prático
+- Em uma rodada de "polimento de cálculos" depois do MVP
 
 ---
 
