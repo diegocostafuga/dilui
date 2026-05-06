@@ -1554,3 +1554,80 @@ button:focus-visible {
 .favorite-btn.active svg {
     fill: currentColor;
 }
+
+/* ============================================
+   Compartilhamento (botões na tela de resultado)
+   ============================================ */
+
+.share-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+}
+
+.btn-share {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background: white;
+    border: 1.5px solid var(--gray-200);
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+}
+
+.btn-share:hover {
+    background: var(--teal-50);
+    border-color: var(--teal-200);
+    color: var(--teal-700);
+}
+
+.btn-share.whatsapp {
+    color: #075e54;
+}
+
+.btn-share.whatsapp:hover {
+    background: #dcf8c6;
+    border-color: #25d366;
+    color: #075e54;
+}
+
+.btn-share svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================
+   Toast (feedback temporário)
+   ============================================ */
+
+.toast {
+    position: fixed;
+    bottom: var(--space-6);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: var(--space-3) var(--space-5);
+    background: var(--gray-900);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 200;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}

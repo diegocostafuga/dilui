@@ -917,6 +917,195 @@ function refazerMistura(id) {
 }
 
 // ============================================
+// COMPARTILHAMENTO VIA LINK
+// ============================================
+
+// Codifica/decodifica base64 com segurança UTF-8 e URL-safe
+// (necessário porque btoa não suporta caracteres acentuados)
+function _encodeBase64Url(str) {
+    return btoa(unescape(encodeURIComponent(str)))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+}
+
+function _decodeBase64Url(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    return decodeURIComponent(escape(atob(str)));
+}
+
+function gerarUrlCompartilhavel() {
+    const dados = {
+        p: estado.produtos.map(p => [
+            p.produtoSelecionado,
+            p.tipo,
+            p.unidade,
+            p.nomePersonalizado || ''
+        ]),
+        r: estado.proporcao,
+        l: [estado.limite.valor, estado.limite.unidade]
+    };
+    const encoded = _encodeBase64Url(JSON.stringify(dados));
+    return `${location.origin}${location.pathname}?m=${encoded}`;
+}
+
+function montarTextoCompartilhamento(url) {
+    const proporcoes = estado.proporcao.split('/').map(p => parseFloat(p.replace(',', '.')));
+    const resultados = calcular(
+        estado.produtos,
+        proporcoes,
+        estado.limite.valor,
+        estado.limite.unidade
+    );
+
+    const linhas = resultados.map(r =>
+        `• ${r.nome}: ${formatarNumero(r.quantidade)} ${r.unidade}`
+    );
+
+    return `🧪 Mistura no Diluí\n\n${linhas.join('\n')}\n\nTotal: ${estado.limite.valor} ${estado.limite.unidade} (proporção ${estado.proporcao})\n\n${url}`;
+}
+
+async function compartilharMistura() {
+    const url = gerarUrlCompartilhavel();
+    const texto = montarTextoCompartilhamento(url);
+
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Mistura no Diluí',
+                text: texto
+            });
+            return;
+        } catch (e) {
+            if (e.name === 'AbortError') return; // usuário cancelou
+            // outras falhas → cai pro fallback
+        }
+    }
+
+    try {
+        await navigator.clipboard.writeText(url);
+        mostrarToast('Link copiado! 🔗');
+    } catch {
+        mostrarToast('Não foi possível copiar o link');
+    }
+}
+
+function compartilharNoWhatsApp() {
+    const url = gerarUrlCompartilhavel();
+    const texto = montarTextoCompartilhamento(url);
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+    window.open(waUrl, '_blank', 'noopener');
+}
+
+function carregarMisturaDeUrl() {
+    const params = new URLSearchParams(location.search);
+    const m = params.get('m');
+    if (!m) return false;
+
+    try {
+        const dados = JSON.parse(_decodeBase64Url(m));
+
+        if (!Array.isArray(dados.p) || dados.p.length < 2 || dados.p.length > 5) {
+            throw new Error('Quantidade de produtos inválida');
+        }
+        if (typeof dados.r !== 'string' || !dados.r) {
+            throw new Error('Proporção inválida');
+        }
+        if (!Array.isArray(dados.l) || dados.l.length !== 2 || typeof dados.l[0] !== 'number') {
+            throw new Error('Limite inválido');
+        }
+
+        const idsValidos = new Set(PRODUTOS_PRECADASTRADOS.map(p => p.id));
+        const tiposValidos = ['liquido', 'po'];
+        const unidadesValidas = ['mL', 'L', 'g', 'kg'];
+
+        estado.quantidadeProdutos = dados.p.length;
+        estado.produtos = dados.p.map((linha, i) => {
+            if (!Array.isArray(linha) || linha.length < 3) {
+                throw new Error('Produto inválido');
+            }
+            const [idOrig, tipoOrig, unidadeOrig, nomeOrig = ''] = linha;
+            // Se o id não existir no catálogo (versão antiga ou link forjado),
+            // cai pra "Outro" preservando o nome original como custom.
+            const id = idsValidos.has(idOrig) ? idOrig : 'outro';
+            const nome = id === 'outro' ? (nomeOrig || idOrig || '') : (nomeOrig || '');
+            return {
+                id: `produto-${i}`,
+                indice: i,
+                produtoSelecionado: id,
+                nomePersonalizado: nome,
+                tipo: tiposValidos.includes(tipoOrig) ? tipoOrig : 'liquido',
+                unidade: unidadesValidas.includes(unidadeOrig) ? unidadeOrig : 'mL'
+            };
+        });
+        estado.proporcao = dados.r;
+        estado.proporcaoValida = true;
+        estado.limite = { valor: dados.l[0], unidade: dados.l[1] };
+
+        // Sincroniza UI dos passos anteriores (caso usuário clique "Ajustar")
+        dom.pillsCount.forEach(pill => {
+            const isActive = parseInt(pill.dataset.count) === estado.quantidadeProdutos;
+            pill.classList.toggle('active', isActive);
+            pill.setAttribute('aria-checked', isActive);
+        });
+        renderizarProdutos();
+        atualizarPresetsProporcao();
+        dom.ratioInput.value = estado.proporcao;
+        dom.ratioInput.classList.add('success');
+        dom.ratioStatus.className = 'input-icon success';
+        dom.limitValue.value = estado.limite.valor;
+        sugerirUnidadeLimite();
+        dom.limitUnit.value = estado.limite.unidade;
+        atualizarBotoesNavegacao();
+
+        const proporcoes = estado.proporcao.split('/').map(p => parseFloat(p.replace(',', '.')));
+        const resultados = calcular(
+            estado.produtos,
+            proporcoes,
+            estado.limite.valor,
+            estado.limite.unidade
+        );
+        renderizarResultados(resultados);
+
+        // Limpa o ?m= da URL pra refresh não recarregar e address bar ficar limpa
+        history.replaceState({}, '', location.pathname);
+
+        irParaPasso(5, 'forward');
+        setTimeout(() => mostrarToast('Mistura carregada do link! ✨'), 400);
+        return true;
+    } catch (e) {
+        console.warn('Link compartilhado inválido:', e);
+        history.replaceState({}, '', location.pathname);
+        setTimeout(() => mostrarToast('Link inválido — começando do zero'), 100);
+        return false;
+    }
+}
+
+// ============================================
+// TOAST (feedback temporário)
+// ============================================
+
+let _toastTimeoutId = null;
+
+function mostrarToast(mensagem, duracao = 3000) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.setAttribute('role', 'status');
+        document.body.appendChild(toast);
+    }
+    toast.textContent = mensagem;
+    requestAnimationFrame(() => toast.classList.add('visible'));
+
+    clearTimeout(_toastTimeoutId);
+    _toastTimeoutId = setTimeout(() => {
+        toast.classList.remove('visible');
+    }, duracao);
+}
+
+// ============================================
 // INICIALIZAÇÃO E EVENT LISTENERS
 // ============================================
 
@@ -929,6 +1118,8 @@ function registrarEventos() {
             else if (acao === 'calculate') avancar();
             else if (acao === 'restart') reiniciar();
             else if (acao === 'start') irParaPasso(1, 'forward');
+            else if (acao === 'share') compartilharMistura();
+            else if (acao === 'share-whatsapp') compartilharNoWhatsApp();
         });
     });
 
@@ -1025,6 +1216,9 @@ function inicializar() {
     registrarEventos();
     atualizarBotoesNavegacao();
     atualizarUIConta();
+
+    // Se a URL tem ?m=<mistura-codificada>, salta direto pro resultado
+    carregarMisturaDeUrl();
 }
 
 if (document.readyState === 'loading') {
