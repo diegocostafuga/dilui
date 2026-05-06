@@ -1,0 +1,33 @@
+{
+    "name": "Diluí – Calculadora de Diluição",
+    "short_name": "Diluí",
+    "description": "Calcule a quantidade exata de cada produto para preparar suas misturas de limpeza com precisão.",
+    "lang": "pt-BR",
+    "start_url": "./",
+    "scope": "./",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#f0fdfa",
+    "theme_color": "#14b8a6",
+    "categories": ["utilities", "productivity", "lifestyle"],
+    "icons": [
+        {
+            "src": "icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons/icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

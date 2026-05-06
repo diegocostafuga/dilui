@@ -1631,3 +1631,27 @@ button:focus-visible {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* ============================================
+   Modo standalone (PWA instalada)
+   ============================================ */
+
+@media (display-mode: standalone) {
+    /* Esconde o footer "made with love" — em app instalado vira ruído visual */
+    .footer {
+        display: none;
+    }
+
+    /* Respeita safe area do iOS (notch e home indicator) */
+    .app {
+        padding-top: max(var(--space-4), env(safe-area-inset-top));
+        padding-bottom: max(var(--space-4), env(safe-area-inset-bottom));
+    }
+
+    @media (min-width: 640px) {
+        .app {
+            padding-top: max(var(--space-6), env(safe-area-inset-top));
+            padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+        }
+    }
+}

@@ -1219,6 +1219,34 @@ function inicializar() {
 
     // Se a URL tem ?m=<mistura-codificada>, salta direto pro resultado
     carregarMisturaDeUrl();
+
+    registrarServiceWorker();
+}
+
+// ============================================
+// PWA – Service Worker
+// ============================================
+
+function registrarServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    // file:// não suporta SW; só registra em http(s).
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') return;
+
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            // Detecta atualização disponível: novo SW está esperando.
+            reg.addEventListener('updatefound', () => {
+                const novo = reg.installing;
+                if (!novo) return;
+                novo.addEventListener('statechange', () => {
+                    if (novo.state === 'installed' && navigator.serviceWorker.controller) {
+                        // Já tem um SW ativo + um novo instalado = atualização pendente.
+                        mostrarToast('Nova versão disponível — recarregue para atualizar', 6000);
+                    }
+                });
+            });
+        }).catch(err => console.warn('SW registration failed:', err));
+    });
 }
 
 if (document.readyState === 'loading') {
