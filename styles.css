@@ -157,6 +157,7 @@ button:focus-visible {
     justify-content: space-between;
     margin-bottom: var(--space-5);
     padding: var(--space-2) 0;
+    position: relative;
 }
 
 .logo {
@@ -1630,6 +1631,175 @@ button:focus-visible {
 .toast.visible {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
+}
+
+/* ============================================
+   Banner de incompatibilidade química
+   ============================================ */
+
+.incompatibility-banner {
+    margin-top: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    border: 1.5px solid;
+    animation: slideIn 250ms ease-out;
+}
+
+.incompatibility-banner.severity-perigo {
+    background: var(--error-bg);
+    border-color: #fecaca;
+}
+
+.incompatibility-banner.severity-cuidado {
+    background: #fffbeb;
+    border-color: #fde68a;
+}
+
+.incompatibility-banner.severity-ineficaz {
+    background: var(--gray-50);
+    border-color: var(--gray-200);
+}
+
+.ib-header {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    margin-bottom: var(--space-3);
+}
+
+.ib-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.severity-perigo .ib-icon { color: #dc2626; }
+.severity-cuidado .ib-icon { color: #d97706; }
+.severity-ineficaz .ib-icon { color: var(--gray-500); }
+
+.ib-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.ib-titles {
+    flex: 1;
+    min-width: 0;
+}
+
+.ib-title {
+    font-size: 0.9375rem;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--gray-900);
+}
+
+.ib-subtitle {
+    font-size: 0.8125rem;
+    color: var(--gray-600);
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+.ib-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.ib-item {
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.ib-item-badge {
+    display: inline-block;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    margin-bottom: var(--space-2);
+    color: white;
+}
+
+.ib-item.severity-perigo .ib-item-badge { background: #dc2626; }
+.ib-item.severity-cuidado .ib-item-badge { background: #d97706; }
+.ib-item.severity-ineficaz .ib-item-badge { background: var(--gray-500); }
+
+.ib-item-title {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+    letter-spacing: -0.01em;
+}
+
+.ib-item-msg,
+.ib-item-rec {
+    font-size: 0.8125rem;
+    color: var(--gray-700);
+    line-height: 1.5;
+}
+
+.ib-item-msg {
+    margin-bottom: var(--space-2);
+}
+
+.ib-rec-label {
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.ib-acknowledge {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    margin-top: var(--space-4);
+    padding: var(--space-3);
+    background: white;
+    border: 1.5px solid #fecaca;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: var(--gray-900);
+    font-weight: 600;
+    line-height: 1.4;
+    transition: all var(--transition);
+    user-select: none;
+}
+
+.ib-acknowledge:hover {
+    border-color: #dc2626;
+    background: var(--error-bg);
+}
+
+.ib-acknowledge input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    accent-color: #dc2626;
+    cursor: pointer;
+}
+
+.ib-disclaimer {
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px dashed rgba(15, 23, 42, 0.12);
+    font-size: 0.6875rem;
+    color: var(--gray-500);
+    line-height: 1.5;
+    font-style: italic;
 }
 
 /* ============================================

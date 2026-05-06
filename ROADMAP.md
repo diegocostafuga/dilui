@@ -2,7 +2,7 @@
 
 > Documento vivo de planejamento do produto. Atualizar conforme as features são implementadas, descartadas ou repriorizadas.
 
-**Última atualização:** 05 de maio de 2026
+**Última atualização:** 06 de maio de 2026
 **Estágio atual:** Prototipagem inicial (cliente apenas, localStorage)
 
 ---
@@ -59,6 +59,85 @@
 ---
 
 ## 🎯 Features candidatas (backlog priorizado)
+
+### 🚨 Alertas de incompatibilidade química
+
+**Status:** 🟢 Recomendada para próxima iteração
+**Esforço:** Pouco (MVP par-a-par) / Médio (com curadoria expandida e modal técnico)
+**Impacto:** Alto — segurança física do usuário
+
+**Descrição**
+Quando o usuário seleciona dois produtos cuja mistura é perigosa, contraindicada ou simplesmente ineficaz (ex: água sanitária + peróxido, água sanitária + detergente com amônia), o app exibe um aviso visual proeminente já no passo 2 (escolha de produtos) e reforça no resultado final. Foco em proteger fisicamente o usuário antes de qualquer outra coisa.
+
+**Como funciona (MVP)**
+- Tabela `INCOMPATIBILIDADES` no topo de [script.js](script.js), ao lado de `PRODUTOS_PRECADASTRADOS`
+- Cada item do array tem: `a`, `b` (ids dos produtos), `severidade` (`perigo` | `cuidado` | `ineficaz`), `mensagem` curta, `recomendacao` prática
+- Função `verificarIncompatibilidades(produtos)` é chamada dentro de `atualizarProduto()` e retorna a lista de avisos ativos
+- Banner inline acima dos cards do passo 2, cor + ícone + texto por severidade:
+  - 🔴 vermelho = perigo (não misture)
+  - 🟡 âmbar = cuidado (use EPI, ambiente ventilado)
+  - ⚪ cinza = ineficaz (combinação anula efeito)
+- O mesmo banner reaparece no card de resultados (passo 5) como lembrete antes do uso real
+- Banner respeita a convenção do projeto: classe `.error` / `.error-msg` no padrão atual, **sem `alert()` / `confirm()`**
+- Para severidade `perigo`, **bloqueia o cálculo por padrão** — exige checkbox "Estou ciente do risco" antes de habilitar Próximo. Severidades `cuidado` e `ineficaz` apenas mostram o banner sem bloquear o fluxo
+
+**Preferência de comportamento (autonomia do usuário)**
+A regra de bloquear em `perigo` é o padrão seguro, mas o usuário pode ajustá-la — alguém que trabalha com química profissional em ambiente controlado não deve ser interrompido toda vez. Modelo:
+
+- Estado `preferenciaAlertasPerigo` salvo em [storage.js](storage.js) com 3 valores:
+  - `'bloquear'` — padrão. Mostra banner + exige checkbox "Estou ciente" antes de Próximo
+  - `'avisar'` — mostra banner mas libera Próximo direto
+  - `'silenciar'` — não mostra alerta de `perigo` (`cuidado`/`ineficaz` continuam visíveis)
+- Persistência: `localStorage` para convidado e logado por enquanto; migra junto com o resto quando virar backend
+- Acessível e reversível em qualquer momento via item **"Segurança / Alertas"** no menu da conta — nunca pode ser caminho sem volta
+
+**Como o usuário descobre essa preferência**
+Para evitar que alguém clique em `silenciar` no impulso só pra se livrar do popup na primeira vez, a oferta das 3 opções é progressiva:
+
+1. **Primeira aparição de alerta `perigo`**: só o banner + checkbox "Estou ciente". Atrito mínimo, sem opção de silenciar ainda
+2. **A partir da 2ª–3ª vez** que o usuário marcar "ciente": aparece um link discreto no banner — *"trabalha com isso com frequência? ajuste como os alertas aparecem"* — abrindo modal com as 3 opções (radio + texto explicando consequência de cada uma)
+3. **Sempre disponível depois** em "Configurações > Alertas", para reverter
+
+**Versionamento dos alertas (futuro próximo)**
+Quando publicarmos um par crítico novo, quem está em `silenciar` precisa ser notificado — senão alguém que silenciou em 2026 nunca vê alertas adicionados depois. Solução: campo `versaoAlertasReconhecida` no perfil; ao detectar versão maior, retroceder para `avisar` automaticamente uma única vez, com toast explicativo ("novos riscos foram catalogados — revise em Configurações").
+
+**Pares iniciais relevantes ao catálogo atual (a curar com fonte)**
+- 🔴 Água sanitária + Peróxido de hidrogênio → reação exotérmica liberando oxigênio
+- 🔴 Água sanitária + Detergente / Amaciante → risco de gás de cloro (alguns têm amônia)
+- 🟡 Soda cáustica + qualquer ácido → reação exotérmica forte, queimaduras
+- 🟡 Soda cáustica + Peróxido → oxidação acelerada
+- ⚪ Bicarbonato + Vinagre (quando adicionado ao catálogo) → reação ácido-base anula efeito de limpeza
+
+**Por que é estratégica**
+- Único item do backlog que **protege fisicamente o usuário** — diferencial sério em app de produtos químicos
+- Reduz risco reputacional / legal se alguém se machucar seguindo um cálculo do app
+- Casa com a nota histórica do roadmap sobre "Receitas prontas" (postergada justamente porque *"algumas misturas caseiras são perigosas — água sanitária + amoníaco solta gás tóxico"*)
+- Pavimenta features futuras: receitas seguras curadas, página técnica por produto, integração com FISPQ/Anvisa, modo profissional
+
+**Caminho evolutivo (pós-MVP)**
+- Botão "Saiba mais" no banner → modal com explicação química, EPI recomendado e fontes
+- Detecção por **classe química** ao invés de par-a-par: cadastrar cada produto como hipoclorito / ácido / base forte / oxidante / surfactante, e derivar incompatibilidades por regra (escala muito melhor quando o catálogo crescer)
+- Página de detalhes técnicos por produto (pH, classe, EPI, link FISPQ do fabricante)
+- Modo "uso profissional" com texto técnico vs modo "doméstico" com linguagem leiga
+- Reaproveitar a base na futura biblioteca de receitas prontas (filtro automático: receitas que disparariam alerta não são publicáveis)
+
+**Cuidados**
+- **Curadoria com fonte confiável obrigatória**: Anvisa, FISPQ dos fabricantes, literatura de química de limpeza. Não inventar avisos — falso positivo erode confiança, falso negativo machuca pessoa
+- Tom dos textos: alertar sem causar pânico, sempre acompanhado de recomendação prática ("não misture X com Y; se precisar dos dois, use em momentos diferentes e enxágue entre")
+- Acessibilidade: cor + ícone + texto (não apenas cor) — daltonismo e leitores de tela
+- Compartilhamento via link: se uma mistura compartilhada disparar alerta, mostrar logo ao carregar — não esconder o risco em link recebido
+
+**Decisões já fechadas**
+- ✅ Bloquear em `perigo` por padrão, com checkbox "Estou ciente"
+- ✅ Preferência de comportamento (3 opções) revelada progressivamente, não no primeiro encontro
+- ✅ Configuração persistente em `localStorage`, sempre reversível em "Configurações > Alertas"
+
+**Decisões a fechar antes de implementar**
+- Onde guardar o disclaimer legal ("informativo, não substitui orientação técnica") — rodapé do banner ou modal único de boas-vindas?
+- Lista de fontes a consultar para a curadoria inicial dos pares (Anvisa, FISPQ específicas, papers)
+- Limiar exato de "2ª–3ª vez" para revelar as opções avançadas — fixar em 3 ou tornar configurável depois
+
+---
 
 ### 🔥 Compartilhar mistura via link
 

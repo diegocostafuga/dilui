@@ -16,6 +16,7 @@ const PRODUTOS_PRECADASTRADOS = [
     { id: 'peroxido', nome: 'Peróxido de hidrogênio', tipoSugerido: 'liquido' },
     { id: 'detergente', nome: 'Detergente', tipoSugerido: 'liquido' },
     { id: 'amaciante', nome: 'Amaciante', tipoSugerido: 'liquido' },
+    { id: 'vinagre', nome: 'Vinagre', tipoSugerido: 'liquido' },
     { id: 'bicarbonato', nome: 'Bicarbonato de sódio', tipoSugerido: 'po' },
     { id: 'sabao_po', nome: 'Sabão em pó', tipoSugerido: 'po' },
     { id: 'soda', nome: 'Soda cáustica', tipoSugerido: 'po' },
@@ -34,6 +35,104 @@ const PROPORCOES_SUGERIDAS = {
     5: ['1/1/1/2/5', '1/2/2/3/10']
 };
 
+// ============================================
+// INCOMPATIBILIDADES QUÍMICAS
+// ============================================
+//
+// ⚠️  LISTA PROVISÓRIA DE PROTOTIPAGEM — NÃO USAR EM PRODUÇÃO SEM CURADORIA
+//
+// Os pares abaixo se baseiam em conhecimento geral de química de limpeza
+// e DEVEM ser revisados com fonte técnica antes de o projeto sair da fase
+// de protótipo. Lista mínima de fontes a consultar:
+//   - FISPQ (Ficha de Informação de Segurança de Produto Químico) dos
+//     fabricantes brasileiros mais comuns
+//   - Anvisa — saneantes domissanitários
+//   - Literatura de química industrial / segurança ocupacional (NIOSH, OSHA)
+//
+// Falso positivo erode confiança; falso negativo machuca pessoa. A barra
+// de qualidade tem que ser alta antes de virar produto final.
+//
+// Severidades:
+//   'perigo'   — não misturar (gás tóxico, reação violenta) — bloqueia o
+//                fluxo até o usuário marcar "Estou ciente do risco"
+//   'cuidado'  — pode misturar com EPI e ventilação adequada (não bloqueia)
+//   'ineficaz' — combinação anula efeito de limpeza (não bloqueia)
+
+const INCOMPATIBILIDADES = [
+    {
+        a: 'agua_sanitaria',
+        b: 'peroxido',
+        severidade: 'perigo',
+        titulo: 'Água sanitária + Peróxido de hidrogênio',
+        mensagem: 'Dois oxidantes fortes em contato geram reação exotérmica e liberação rápida de oxigênio, com risco de respingos quentes.',
+        recomendacao: 'Use os produtos em momentos separados, com enxágue completo entre as aplicações.'
+    },
+    {
+        a: 'agua_sanitaria',
+        b: 'detergente',
+        severidade: 'perigo',
+        titulo: 'Água sanitária + Detergente',
+        mensagem: 'Muitos detergentes contêm amônia ou derivados. Em contato com hipoclorito (água sanitária), pode liberar gás de cloro — irritante e tóxico para vias aéreas.',
+        recomendacao: 'Limpe primeiro com detergente, enxágue bem e só depois desinfete com água sanitária diluída.'
+    },
+    {
+        a: 'agua_sanitaria',
+        b: 'amaciante',
+        severidade: 'perigo',
+        titulo: 'Água sanitária + Amaciante',
+        mensagem: 'Amaciantes podem reagir com hipoclorito liberando gases irritantes em ambientes fechados.',
+        recomendacao: 'Não combine na mesma água — use em ciclos de lavagem distintos.'
+    },
+    {
+        a: 'agua_sanitaria',
+        b: 'vinagre',
+        severidade: 'perigo',
+        titulo: 'Água sanitária + Vinagre',
+        mensagem: 'A acidez do vinagre reage com hipoclorito liberando gás de cloro — uma das misturas caseiras mais perigosas, mesmo em pouca quantidade. É comum em "receitas naturais" mal informadas.',
+        recomendacao: 'Nunca combine os dois. Limpe primeiro com vinagre, enxágue bem, e só depois aplique água sanitária diluída em outro momento.'
+    },
+    {
+        a: 'soda',
+        b: 'peroxido',
+        severidade: 'cuidado',
+        titulo: 'Soda cáustica + Peróxido',
+        mensagem: 'A combinação acelera a oxidação e gera calor. Pode causar queimaduras e respingos.',
+        recomendacao: 'Use óculos de proteção, luvas resistentes e ambiente bem ventilado, ou aplique os produtos separadamente.'
+    },
+    {
+        a: 'soda',
+        b: 'detergente',
+        severidade: 'cuidado',
+        titulo: 'Soda cáustica + Detergente',
+        mensagem: 'Mistura altamente alcalina — risco de queimadura química em contato com a pele, mesmo diluída.',
+        recomendacao: 'Use luvas de borracha resistente e óculos. Diluição alta não dispensa o EPI.'
+    },
+    {
+        a: 'soda',
+        b: 'vinagre',
+        severidade: 'perigo',
+        titulo: 'Soda cáustica + Vinagre',
+        mensagem: 'Reação ácido-base entre base forte e ácido — libera calor intenso e respingos. Risco real de queimadura química.',
+        recomendacao: 'Não misture na mesma diluição. Se precisar usar os dois para finalidades distintas, faça em momentos separados com enxágue completo.'
+    },
+    {
+        a: 'vinagre',
+        b: 'bicarbonato',
+        severidade: 'ineficaz',
+        titulo: 'Vinagre + Bicarbonato de sódio',
+        mensagem: 'Reação ácido-base clássica: o resultado é água, acetato de sódio (sal sem ação detergente) e gás carbônico. A "espuminha" parece ativa, mas os dois produtos se neutralizam — sobra praticamente água com sal.',
+        recomendacao: 'Use separadamente — bicarbonato como abrasivo seco ou em pasta, vinagre diluído para superfícies onde ácido funciona (calcário, manchas leves).'
+    },
+    {
+        a: 'vinagre',
+        b: 'sabao_po',
+        severidade: 'ineficaz',
+        titulo: 'Vinagre + Sabão em pó',
+        mensagem: 'O vinagre neutraliza a alcalinidade do sabão — exatamente o que dá poder de remover gordura. A mistura perde eficácia e pode deixar resíduo pegajoso nas superfícies.',
+        recomendacao: 'Lave primeiro com sabão e enxágue. Use o vinagre depois, separadamente, como amaciante de tecidos ou desincrustante.'
+    }
+];
+
 const TOTAL_PASSOS = 4;
 
 // ============================================
@@ -46,7 +145,8 @@ const estado = {
     produtos: [],
     proporcao: '',
     proporcaoValida: false,
-    limite: { valor: null, unidade: 'mL' }
+    limite: { valor: null, unidade: 'mL' },
+    cienteIncompatibilidade: false
 };
 
 // ============================================
@@ -71,6 +171,8 @@ const dom = {
     limitUnit: document.getElementById('limitUnit'),
     btnCalculate: document.getElementById('btnCalculate'),
     productsError: document.getElementById('productsError'),
+    incompatibilityBanner: document.getElementById('incompatibilityBanner'),
+    incompatibilityBannerResult: document.getElementById('incompatibilityBannerResult'),
     resultsList: document.getElementById('resultsList'),
     resultsSummary: document.getElementById('resultsSummary'),
     totalCard: document.getElementById('totalCard'),
@@ -172,6 +274,13 @@ function avancar() {
             return;
         }
         limparErroProdutos();
+
+        // Defesa redundante: o botão já está disabled, mas garante que
+        // ninguém fure o bloqueio via Enter ou ferramentas de dev.
+        const avisos = verificarIncompatibilidades(estado.produtos);
+        if (temPerigoAtivo(avisos) && !estado.cienteIncompatibilidade) {
+            return;
+        }
     }
 
     if (estado.passoAtual === 3 && !estado.proporcaoValida) {
@@ -195,6 +304,7 @@ function reiniciar() {
     estado.proporcao = '';
     estado.proporcaoValida = false;
     estado.limite = { valor: null, unidade: 'mL' };
+    estado.cienteIncompatibilidade = false;
 
     selecionarQuantidade(2);
 
@@ -228,6 +338,7 @@ function inicializarProdutos(quantidade) {
             unidade: 'mL'
         });
     }
+    estado.cienteIncompatibilidade = false;
     renderizarProdutos();
 }
 
@@ -236,6 +347,7 @@ function renderizarProdutos() {
     estado.produtos.forEach((produto, idx) => {
         dom.productsList.appendChild(criarCardProduto(produto, idx));
     });
+    atualizarBannerIncompatibilidadePasso2();
 }
 
 function obterProdutosOrdenados() {
@@ -358,7 +470,11 @@ function atualizarProduto(idx, campo, valor) {
             produto.unidade = UNIDADES[produto.tipo][0];
             produto.nomePersonalizado = '';
         }
+        // Mudou um produto da mistura → ciência anterior não vale para a
+        // nova combinação, força o usuário a reconhecer o novo cenário.
+        estado.cienteIncompatibilidade = false;
         renderizarProdutos();
+        atualizarBotoesNavegacao();
     }
 
     if (campo === 'tipo') {
@@ -560,10 +676,130 @@ function sugerirUnidadeLimite() {
 }
 
 // ============================================
+// INCOMPATIBILIDADES — verificação e UI
+// ============================================
+
+function verificarIncompatibilidades(produtos) {
+    const ids = produtos.map(p => p.produtoSelecionado);
+    return INCOMPATIBILIDADES.filter(inc =>
+        ids.includes(inc.a) && ids.includes(inc.b)
+    );
+}
+
+function temPerigoAtivo(avisos) {
+    return avisos.some(a => a.severidade === 'perigo');
+}
+
+function _maiorSeveridade(avisos) {
+    if (avisos.some(a => a.severidade === 'perigo')) return 'perigo';
+    if (avisos.some(a => a.severidade === 'cuidado')) return 'cuidado';
+    return 'ineficaz';
+}
+
+const _SVG_PERIGO = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 9v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+const _SVG_INFO = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+    <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>`;
+
+function renderizarBannerIncompatibilidade(container, avisos, opts = {}) {
+    const { incluirCheckbox = false, incluirDisclaimer = false } = opts;
+
+    if (!container) return;
+
+    if (avisos.length === 0) {
+        container.hidden = true;
+        container.innerHTML = '';
+        return;
+    }
+
+    const severidade = _maiorSeveridade(avisos);
+    const temPerigo = severidade === 'perigo';
+
+    container.hidden = false;
+    container.className = `incompatibility-banner severity-${severidade}`;
+
+    const titulo = severidade === 'perigo'
+        ? 'Combinação perigosa'
+        : severidade === 'cuidado'
+        ? 'Misture com cuidado'
+        : 'Combinação ineficaz';
+
+    const subtitulo = severidade === 'perigo'
+        ? 'Os produtos abaixo não devem ser misturados na mesma diluição.'
+        : severidade === 'cuidado'
+        ? 'Combinação possível, mas exige proteção adequada.'
+        : 'A combinação tende a anular o efeito de limpeza.';
+
+    const icone = temPerigo ? _SVG_PERIGO : _SVG_INFO;
+
+    const itens = avisos.map(a => `
+        <li class="ib-item severity-${a.severidade}">
+            <span class="ib-item-badge">${a.severidade === 'perigo' ? 'Perigo' : a.severidade === 'cuidado' ? 'Cuidado' : 'Ineficaz'}</span>
+            <strong class="ib-item-title">${a.titulo}</strong>
+            <p class="ib-item-msg">${a.mensagem}</p>
+            <p class="ib-item-rec"><span class="ib-rec-label">Como contornar:</span> ${a.recomendacao}</p>
+        </li>
+    `).join('');
+
+    const checkboxHtml = (incluirCheckbox && temPerigo) ? `
+        <label class="ib-acknowledge">
+            <input type="checkbox" id="ibAcknowledge" ${estado.cienteIncompatibilidade ? 'checked' : ''}>
+            <span>Entendi os riscos e quero continuar mesmo assim</span>
+        </label>
+    ` : '';
+
+    const disclaimerHtml = incluirDisclaimer ? `
+        <p class="ib-disclaimer">
+            Lista provisória de pares conhecidos — versão de prototipagem. Antes de virar produto final, será revisada com fonte técnica (Anvisa, FISPQ).
+        </p>
+    ` : '';
+
+    container.innerHTML = `
+        <div class="ib-header">
+            <span class="ib-icon" aria-hidden="true">${icone}</span>
+            <div class="ib-titles">
+                <h4 class="ib-title">${titulo}</h4>
+                <p class="ib-subtitle">${subtitulo}</p>
+            </div>
+        </div>
+        <ul class="ib-list">${itens}</ul>
+        ${checkboxHtml}
+        ${disclaimerHtml}
+    `;
+
+    if (incluirCheckbox && temPerigo) {
+        const checkbox = container.querySelector('#ibAcknowledge');
+        checkbox.addEventListener('change', e => {
+            estado.cienteIncompatibilidade = e.target.checked;
+            atualizarBotoesNavegacao();
+        });
+    }
+}
+
+function atualizarBannerIncompatibilidadePasso2() {
+    const avisos = verificarIncompatibilidades(estado.produtos);
+    renderizarBannerIncompatibilidade(dom.incompatibilityBanner, avisos, {
+        incluirCheckbox: true,
+        incluirDisclaimer: true
+    });
+}
+
+// ============================================
 // VALIDAÇÃO E NAVEGAÇÃO DOS BOTÕES
 // ============================================
 
 function atualizarBotoesNavegacao() {
+    const btnPasso2 = document.querySelector('.step[data-step="2"] .btn-primary');
+    if (btnPasso2) {
+        const avisos = verificarIncompatibilidades(estado.produtos);
+        btnPasso2.disabled = temPerigoAtivo(avisos) && !estado.cienteIncompatibilidade;
+    }
+
     const btnPasso3 = document.querySelector('.step[data-step="3"] .btn-primary');
     if (btnPasso3) {
         btnPasso3.disabled = !estado.proporcaoValida;
@@ -657,6 +893,14 @@ function formatarNumero(valor) {
 function renderizarResultados(resultados) {
     dom.resultsSummary.textContent =
         `${estado.proporcao} em ${estado.limite.valor} ${estado.limite.unidade}`;
+
+    // Reforça o aviso na tela de resultado — sem checkbox (já passou pelo
+    // bloqueio) e sem disclaimer (menos ruído visual aqui).
+    const avisos = verificarIncompatibilidades(estado.produtos);
+    renderizarBannerIncompatibilidade(dom.incompatibilityBannerResult, avisos, {
+        incluirCheckbox: false,
+        incluirDisclaimer: false
+    });
 
     dom.resultsList.innerHTML = resultados.map(r => `
         <div class="result-item">
