@@ -70,9 +70,40 @@ const dom = {
     limitValue: document.getElementById('limitValue'),
     limitUnit: document.getElementById('limitUnit'),
     btnCalculate: document.getElementById('btnCalculate'),
+    productsError: document.getElementById('productsError'),
     resultsList: document.getElementById('resultsList'),
     resultsSummary: document.getElementById('resultsSummary'),
-    totalCard: document.getElementById('totalCard')
+    totalCard: document.getElementById('totalCard'),
+
+    // Conta e auth
+    accountBtn: document.getElementById('accountBtn'),
+    accountBtnGuest: document.getElementById('accountBtnGuest'),
+    accountBtnLogged: document.getElementById('accountBtnLogged'),
+    accountAvatar: document.getElementById('accountAvatar'),
+    accountMenu: document.getElementById('accountMenu'),
+    accountMenuName: document.getElementById('accountMenuName'),
+    accountMenuEmail: document.getElementById('accountMenuEmail'),
+
+    // Modal de auth
+    authModal: document.getElementById('authModal'),
+    authModalClose: document.getElementById('authModalClose'),
+    authModalTitle: document.getElementById('authModalTitle'),
+    authModalSubtitle: document.getElementById('authModalSubtitle'),
+    loginForm: document.getElementById('loginForm'),
+    loginEmail: document.getElementById('loginEmail'),
+    loginSenha: document.getElementById('loginSenha'),
+    loginError: document.getElementById('loginError'),
+    cadastroForm: document.getElementById('cadastroForm'),
+    cadastroNome: document.getElementById('cadastroNome'),
+    cadastroEmail: document.getElementById('cadastroEmail'),
+    cadastroSenha: document.getElementById('cadastroSenha'),
+    cadastroError: document.getElementById('cadastroError'),
+
+    // Modal de histórico
+    historicoModal: document.getElementById('historicoModal'),
+    historicoModalClose: document.getElementById('historicoModalClose'),
+    historicoList: document.getElementById('historicoList'),
+    historicoEmpty: document.getElementById('historicoEmpty')
 };
 
 // ============================================
@@ -132,13 +163,15 @@ function atualizarBarraProgresso() {
 
 function avancar() {
     if (estado.passoAtual === 2) {
-        const produtosInvalidos = estado.produtos.some(p =>
-            p.produtoSelecionado === 'outro' && !p.nomePersonalizado.trim()
-        );
-        if (produtosInvalidos) {
-            alert('Por favor, dê um nome para os produtos personalizados.');
+        const indicesInvalidos = estado.produtos
+            .map((p, i) => (p.produtoSelecionado === 'outro' && !p.nomePersonalizado.trim()) ? i : -1)
+            .filter(i => i !== -1);
+
+        if (indicesInvalidos.length > 0) {
+            mostrarErroProdutos(indicesInvalidos);
             return;
         }
+        limparErroProdutos();
     }
 
     if (estado.passoAtual === 3 && !estado.proporcaoValida) {
@@ -205,14 +238,37 @@ function renderizarProdutos() {
     });
 }
 
+function obterProdutosOrdenados() {
+    // Se logado, favoritos sobem para o topo (mantendo "Outro" sempre no fim)
+    const favoritos = window.DiluiStorage.Favoritos.listar();
+
+    if (!window.DiluiStorage.Auth.estaLogado() || favoritos.length === 0) {
+        return PRODUTOS_PRECADASTRADOS;
+    }
+
+    const outro = PRODUTOS_PRECADASTRADOS.find(p => p.id === 'outro');
+    const semOutro = PRODUTOS_PRECADASTRADOS.filter(p => p.id !== 'outro');
+
+    const favoritados = semOutro.filter(p => favoritos.includes(p.id));
+    const naoFavoritados = semOutro.filter(p => !favoritos.includes(p.id));
+
+    return [...favoritados, ...naoFavoritados, outro];
+}
+
 function criarCardProduto(produto, idx) {
     const card = document.createElement('div');
     card.className = 'product-card';
     card.dataset.idx = idx;
 
-    const opcoes = PRODUTOS_PRECADASTRADOS.map(p =>
-        `<option value="${p.id}" ${p.id === produto.produtoSelecionado ? 'selected' : ''}>${p.nome}</option>`
-    ).join('');
+    const produtosOrdenados = obterProdutosOrdenados();
+    const favoritos = window.DiluiStorage.Favoritos.listar();
+    const ehFavorito = favoritos.includes(produto.produtoSelecionado);
+    const podeSerFavoritado = window.DiluiStorage.Auth.estaLogado() && produto.produtoSelecionado !== 'outro';
+
+    const opcoes = produtosOrdenados.map(p => {
+        const star = favoritos.includes(p.id) ? '★ ' : '';
+        return `<option value="${p.id}" ${p.id === produto.produtoSelecionado ? 'selected' : ''}>${star}${p.nome}</option>`;
+    }).join('');
 
     const unidadesOpcoes = UNIDADES[produto.tipo].map(u =>
         `<option value="${u}" ${u === produto.unidade ? 'selected' : ''}>${u}</option>`
@@ -220,14 +276,25 @@ function criarCardProduto(produto, idx) {
 
     const mostrarCustom = produto.produtoSelecionado === 'outro';
 
+    const estrelaHtml = podeSerFavoritado ? `
+        <button class="favorite-btn ${ehFavorito ? 'active' : ''}" data-action="favoritar" type="button" aria-label="Favoritar produto" title="${ehFavorito ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    ` : '';
+
     card.innerHTML = `
         <div class="product-card-header">
             <span class="product-number">${idx + 1}</span>
             <span>Produto ${idx + 1}</span>
         </div>
-        <select class="select" data-field="produtoSelecionado" aria-label="Escolher produto ${idx + 1}">
-            ${opcoes}
-        </select>
+        <div class="product-card-row">
+            <select class="select" data-field="produtoSelecionado" aria-label="Escolher produto ${idx + 1}">
+                ${opcoes}
+            </select>
+            ${estrelaHtml}
+        </div>
         <div class="custom-product-input ${mostrarCustom ? 'visible' : ''}">
             <input
                 type="text"
@@ -269,6 +336,14 @@ function criarCardProduto(produto, idx) {
     const unitSelect = card.querySelector('[data-field="unidade"]');
     unitSelect.addEventListener('change', e => atualizarProduto(idx, 'unidade', e.target.value));
 
+    const btnFav = card.querySelector('[data-action="favoritar"]');
+    if (btnFav) {
+        btnFav.addEventListener('click', () => {
+            window.DiluiStorage.Favoritos.alternar(produto.produtoSelecionado);
+            renderizarProdutos();
+        });
+    }
+
     return card;
 }
 
@@ -293,7 +368,39 @@ function atualizarProduto(idx, campo, valor) {
         renderizarProdutos();
     }
 
+    if (campo === 'nomePersonalizado' && valor.trim()) {
+        const card = dom.productsList.querySelector(`.product-card[data-idx="${idx}"] [data-field="nomePersonalizado"]`);
+        if (card) card.classList.remove('error');
+
+        const aindaInvalido = estado.produtos.some(p =>
+            p.produtoSelecionado === 'outro' && !p.nomePersonalizado.trim()
+        );
+        if (!aindaInvalido) limparErroProdutos();
+    }
+
     sugerirUnidadeLimite();
+}
+
+function mostrarErroProdutos(indices) {
+    dom.productsError.textContent = indices.length === 1
+        ? 'Dê um nome para o produto personalizado.'
+        : 'Dê um nome para os produtos personalizados.';
+    dom.productsError.classList.add('visible');
+
+    indices.forEach(i => {
+        const input = dom.productsList.querySelector(`.product-card[data-idx="${i}"] [data-field="nomePersonalizado"]`);
+        if (input) {
+            input.classList.add('error');
+            if (indices[0] === i) input.focus({ preventScroll: false });
+        }
+    });
+}
+
+function limparErroProdutos() {
+    dom.productsError.classList.remove('visible');
+    dom.productsError.textContent = '';
+    dom.productsList.querySelectorAll('[data-field="nomePersonalizado"].error')
+        .forEach(el => el.classList.remove('error'));
 }
 
 // ============================================
@@ -517,6 +624,21 @@ function executarCalculo() {
         estado.limite.unidade
     );
 
+    if (window.DiluiStorage.Auth.estaLogado()) {
+        window.DiluiStorage.Historico.adicionar({
+            quantidadeProdutos: estado.quantidadeProdutos,
+            produtos: estado.produtos.map(p => ({
+                produtoSelecionado: p.produtoSelecionado,
+                nomePersonalizado: p.nomePersonalizado,
+                tipo: p.tipo,
+                unidade: p.unidade
+            })),
+            proporcao: estado.proporcao,
+            limite: { ...estado.limite },
+            resultados
+        });
+    }
+
     renderizarResultados(resultados);
     irParaPasso(5, 'forward');
 }
@@ -565,6 +687,236 @@ function renderizarResultados(resultados) {
 }
 
 // ============================================
+// AUTENTICAÇÃO E UI DE CONTA
+// ============================================
+
+function atualizarUIConta() {
+    const usuario = window.DiluiStorage.Auth.usuarioAtual();
+
+    if (usuario) {
+        dom.accountBtnGuest.hidden = true;
+        dom.accountBtnLogged.hidden = false;
+        dom.accountAvatar.textContent = usuario.nome.charAt(0);
+        dom.accountMenuName.textContent = usuario.nome;
+        dom.accountMenuEmail.textContent = usuario.email;
+    } else {
+        dom.accountBtnGuest.hidden = false;
+        dom.accountBtnLogged.hidden = true;
+        dom.accountMenu.hidden = true;
+    }
+
+    renderizarProdutos();
+}
+
+function abrirModalAuth() {
+    dom.authModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => dom.loginEmail.focus(), 100);
+}
+
+function fecharModalAuth() {
+    dom.authModal.hidden = true;
+    document.body.style.overflow = '';
+    dom.loginForm.reset();
+    dom.cadastroForm.reset();
+    dom.loginError.classList.remove('visible');
+    dom.cadastroError.classList.remove('visible');
+}
+
+function alternarTabAuth(tab) {
+    document.querySelectorAll('.modal-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+    });
+
+    if (tab === 'login') {
+        dom.loginForm.hidden = false;
+        dom.cadastroForm.hidden = true;
+        dom.authModalTitle.textContent = 'Bem-vindo de volta';
+        dom.authModalSubtitle.textContent = 'Entre para acessar seu histórico e favoritos.';
+        setTimeout(() => dom.loginEmail.focus(), 50);
+    } else {
+        dom.loginForm.hidden = true;
+        dom.cadastroForm.hidden = false;
+        dom.authModalTitle.textContent = 'Crie sua conta';
+        dom.authModalSubtitle.textContent = 'Salve suas misturas e favorite seus produtos.';
+        setTimeout(() => dom.cadastroNome.focus(), 50);
+    }
+}
+
+function processarLogin(e) {
+    e.preventDefault();
+    dom.loginError.classList.remove('visible');
+
+    const resultado = window.DiluiStorage.Auth.login(
+        dom.loginEmail.value,
+        dom.loginSenha.value
+    );
+
+    if (resultado.sucesso) {
+        fecharModalAuth();
+        atualizarUIConta();
+    } else {
+        dom.loginError.textContent = resultado.erro;
+        dom.loginError.classList.add('visible');
+    }
+}
+
+function processarCadastro(e) {
+    e.preventDefault();
+    dom.cadastroError.classList.remove('visible');
+
+    const resultado = window.DiluiStorage.Auth.cadastrar(
+        dom.cadastroNome.value,
+        dom.cadastroEmail.value,
+        dom.cadastroSenha.value
+    );
+
+    if (resultado.sucesso) {
+        fecharModalAuth();
+        atualizarUIConta();
+    } else {
+        dom.cadastroError.textContent = resultado.erro;
+        dom.cadastroError.classList.add('visible');
+    }
+}
+
+function fazerLogout() {
+    window.DiluiStorage.Auth.logout();
+    dom.accountMenu.hidden = true;
+    atualizarUIConta();
+}
+
+// ============================================
+// HISTÓRICO – UI
+// ============================================
+
+function abrirModalHistorico() {
+    renderizarHistorico();
+    dom.historicoModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModalHistorico() {
+    dom.historicoModal.hidden = true;
+    document.body.style.overflow = '';
+}
+
+function formatarDataHistorico(isoString) {
+    const data = new Date(isoString);
+    const agora = new Date();
+    const diffMs = agora - data;
+    const diffHoras = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDias = Math.floor(diffHoras / 24);
+
+    if (diffHoras < 1) return 'Há instantes';
+    if (diffHoras < 24) return `Há ${diffHoras}h`;
+    if (diffDias === 1) return 'Ontem';
+    if (diffDias < 7) return `Há ${diffDias} dias`;
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function renderizarHistorico() {
+    const lista = window.DiluiStorage.Historico.listar();
+
+    if (lista.length === 0) {
+        dom.historicoList.hidden = true;
+        dom.historicoEmpty.hidden = false;
+        return;
+    }
+
+    dom.historicoList.hidden = false;
+    dom.historicoEmpty.hidden = true;
+
+    dom.historicoList.innerHTML = lista.map(item => {
+        const nomes = item.produtos.map(p => obterNomeProduto(p)).join(' + ');
+        return `
+            <div class="historico-item">
+                <div class="historico-item-top">
+                    <span class="historico-item-ratio">${item.proporcao}</span>
+                    <span class="historico-item-date">${formatarDataHistorico(item.criadoEm)}</span>
+                </div>
+                <div class="historico-item-products">
+                    ${nomes} · ${item.limite.valor} ${item.limite.unidade}
+                </div>
+                <div class="historico-item-actions">
+                    <button class="historico-item-btn primary" data-historico-action="refazer" data-id="${item.id}" type="button">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M1 4V10H7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M3.51 15A9 9 0 1 0 6 5.3L1 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Refazer</span>
+                    </button>
+                    <button class="historico-item-btn danger" data-historico-action="remover" data-id="${item.id}" type="button" aria-label="Remover">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M3 6H5H21M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    dom.historicoList.querySelectorAll('[data-historico-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const acao = btn.dataset.historicoAction;
+            const id = btn.dataset.id;
+
+            if (acao === 'refazer') {
+                refazerMistura(id);
+            } else if (acao === 'remover') {
+                if (confirm('Remover esta mistura do histórico?')) {
+                    window.DiluiStorage.Historico.remover(id);
+                    renderizarHistorico();
+                }
+            }
+        });
+    });
+}
+
+function refazerMistura(id) {
+    const lista = window.DiluiStorage.Historico.listar();
+    const mistura = lista.find(m => m.id === id);
+    if (!mistura) return;
+
+    estado.quantidadeProdutos = mistura.quantidadeProdutos;
+    estado.produtos = mistura.produtos.map((p, i) => ({
+        id: `produto-${i}`,
+        indice: i,
+        ...p
+    }));
+    estado.proporcao = mistura.proporcao;
+    estado.proporcaoValida = true;
+    estado.limite = { ...mistura.limite };
+
+    dom.pillsCount.forEach(pill => {
+        const isActive = parseInt(pill.dataset.count) === mistura.quantidadeProdutos;
+        pill.classList.toggle('active', isActive);
+        pill.setAttribute('aria-checked', isActive);
+    });
+
+    renderizarProdutos();
+    atualizarPresetsProporcao();
+    dom.ratioInput.value = mistura.proporcao;
+    dom.ratioInput.classList.add('success');
+    dom.ratioStatus.className = 'input-icon success';
+    dom.limitValue.value = mistura.limite.valor;
+    dom.limitUnit.value = mistura.limite.unidade;
+
+    fecharModalHistorico();
+
+    const proporcoes = mistura.proporcao.split('/').map(p => parseFloat(p.replace(',', '.')));
+    const resultados = calcular(
+        estado.produtos,
+        proporcoes,
+        estado.limite.valor,
+        estado.limite.unidade
+    );
+
+    renderizarResultados(resultados);
+    irParaPasso(5, 'forward');
+}
+
+// ============================================
 // INICIALIZAÇÃO E EVENT LISTENERS
 // ============================================
 
@@ -602,6 +954,7 @@ function registrarEventos() {
         if (e.key === 'Enter' && !e.shiftKey) {
             const tag = e.target.tagName;
             if (tag === 'SELECT' || tag === 'TEXTAREA') return;
+            if (e.target.closest('form')) return; // Forms tem submit próprio
 
             const passoAtivo = document.querySelector('.step.active');
             const btnPrincipal = passoAtivo?.querySelector('.btn-primary:not(:disabled)');
@@ -610,6 +963,59 @@ function registrarEventos() {
                 btnPrincipal.click();
             }
         }
+        if (e.key === 'Escape') {
+            if (!dom.authModal.hidden) fecharModalAuth();
+            else if (!dom.historicoModal.hidden) fecharModalHistorico();
+            else if (!dom.accountMenu.hidden) dom.accountMenu.hidden = true;
+        }
+    });
+
+    // ============================================
+    // CONTA E AUTH
+    // ============================================
+
+    dom.accountBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (window.DiluiStorage.Auth.estaLogado()) {
+            dom.accountMenu.hidden = !dom.accountMenu.hidden;
+        } else {
+            abrirModalAuth();
+        }
+    });
+
+    document.addEventListener('click', e => {
+        if (!dom.accountMenu.hidden &&
+            !dom.accountMenu.contains(e.target) &&
+            !dom.accountBtn.contains(e.target)) {
+            dom.accountMenu.hidden = true;
+        }
+    });
+
+    dom.accountMenu.querySelectorAll('[data-menu-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const acao = btn.dataset.menuAction;
+            dom.accountMenu.hidden = true;
+
+            if (acao === 'historico') abrirModalHistorico();
+            else if (acao === 'logout') fazerLogout();
+        });
+    });
+
+    document.querySelectorAll('.modal-tab').forEach(tab => {
+        tab.addEventListener('click', () => alternarTabAuth(tab.dataset.tab));
+    });
+
+    dom.authModalClose.addEventListener('click', fecharModalAuth);
+    dom.authModal.addEventListener('click', e => {
+        if (e.target === dom.authModal) fecharModalAuth();
+    });
+
+    dom.loginForm.addEventListener('submit', processarLogin);
+    dom.cadastroForm.addEventListener('submit', processarCadastro);
+
+    dom.historicoModalClose.addEventListener('click', fecharModalHistorico);
+    dom.historicoModal.addEventListener('click', e => {
+        if (e.target === dom.historicoModal) fecharModalHistorico();
     });
 }
 
@@ -618,6 +1024,7 @@ function inicializar() {
     atualizarPresetsProporcao();
     registrarEventos();
     atualizarBotoesNavegacao();
+    atualizarUIConta();
 }
 
 if (document.readyState === 'loading') {
