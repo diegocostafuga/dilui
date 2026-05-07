@@ -11,11 +11,19 @@ const PRODUTOS_PRECADASTRADOS = [
     { id: 'agua', nome: 'Água', tipoSugerido: 'liquido' },
     { id: 'multiuso', nome: 'Multiuso', tipoSugerido: 'liquido' },
     { id: 'desinfetante', nome: 'Desinfetante', tipoSugerido: 'liquido' },
+    { id: 'alcool_70', nome: 'Álcool 70%', tipoSugerido: 'liquido' },
+    { id: 'alcool_46', nome: 'Álcool 46°', tipoSugerido: 'liquido' },
     { id: 'agua_sanitaria', nome: 'Água sanitária', tipoSugerido: 'liquido' },
+    { id: 'amonia', nome: 'Amônia', tipoSugerido: 'liquido' },
     { id: 'limpa_vidros', nome: 'Limpa vidros', tipoSugerido: 'liquido' },
     { id: 'peroxido', nome: 'Peróxido de hidrogênio', tipoSugerido: 'liquido' },
     { id: 'detergente', nome: 'Detergente', tipoSugerido: 'liquido' },
+    { id: 'sabao_coco_liquido', nome: 'Sabão de coco líquido', tipoSugerido: 'liquido' },
+    { id: 'sabao_neutro_liquido', nome: 'Sabão neutro líquido', tipoSugerido: 'liquido' },
+    { id: 'desengordurante', nome: 'Desengordurante', tipoSugerido: 'liquido' },
+    { id: 'limpa_piso', nome: 'Limpa-piso concentrado', tipoSugerido: 'liquido' },
     { id: 'amaciante', nome: 'Amaciante', tipoSugerido: 'liquido' },
+    { id: 'aromatizante', nome: 'Aromatizante concentrado', tipoSugerido: 'liquido' },
     { id: 'vinagre', nome: 'Vinagre', tipoSugerido: 'liquido' },
     { id: 'bicarbonato', nome: 'Bicarbonato de sódio', tipoSugerido: 'po' },
     { id: 'sabao_po', nome: 'Sabão em pó', tipoSugerido: 'po' },
@@ -130,6 +138,62 @@ const INCOMPATIBILIDADES = [
         titulo: 'Vinagre + Sabão em pó',
         mensagem: 'O vinagre neutraliza a alcalinidade do sabão — exatamente o que dá poder de remover gordura. A mistura perde eficácia e pode deixar resíduo pegajoso nas superfícies.',
         recomendacao: 'Lave primeiro com sabão e enxágue. Use o vinagre depois, separadamente, como amaciante de tecidos ou desincrustante.'
+    },
+    {
+        a: 'amonia',
+        b: 'agua_sanitaria',
+        severidade: 'perigo',
+        titulo: 'Amônia + Água sanitária',
+        mensagem: 'Reage liberando gás cloramina — irritante grave de vias aéreas, mucosas e olhos, com risco de edema pulmonar em ambiente fechado. É uma das misturas caseiras mais perigosas que existem.',
+        recomendacao: 'Nunca combine os dois. Use em momentos completamente separados, com ventilação total e enxágue abundante entre as aplicações.'
+    },
+    {
+        a: 'amonia',
+        b: 'peroxido',
+        severidade: 'cuidado',
+        titulo: 'Amônia + Peróxido de hidrogênio',
+        mensagem: 'A combinação pode formar hidrazina — composto tóxico — em concentrações altas, e libera oxigênio com geração de calor. Em produtos domésticos diluídos o risco é menor, mas não desprezível.',
+        recomendacao: 'Evite a mistura. Se precisar dos dois, use separadamente, em superfícies enxaguadas, com ventilação adequada.'
+    },
+    {
+        a: 'amonia',
+        b: 'vinagre',
+        severidade: 'ineficaz',
+        titulo: 'Amônia + Vinagre',
+        mensagem: 'Reação ácido-base entre base fraca e ácido fraco: o resultado é acetato de amônio (sal sem ação detergente) e água. Ambos perdem o poder de limpeza.',
+        recomendacao: 'Use separadamente — vinagre para superfícies onde ácido funciona (calcário, gordura leve), amônia para vidros e desengordurar.'
+    },
+    {
+        a: 'alcool_70',
+        b: 'agua_sanitaria',
+        severidade: 'cuidado',
+        titulo: 'Álcool 70% + Água sanitária',
+        mensagem: 'Em contato com hipoclorito o etanol pode oxidar e gerar pequenas quantidades de cloroformio e cloroacetona — irritantes respiratórios. Em concentração doméstica o risco é baixo, mas evitável.',
+        recomendacao: 'Não misture na mesma aplicação. Limpe com um, enxágue bem, e só depois use o outro — sempre com ambiente ventilado.'
+    },
+    {
+        a: 'alcool_46',
+        b: 'agua_sanitaria',
+        severidade: 'cuidado',
+        titulo: 'Álcool 46° + Água sanitária',
+        mensagem: 'Mesmo princípio do álcool 70%: o etanol pode reagir com hipoclorito gerando subprodutos clorados irritantes. Concentração menor reduz o risco, mas não elimina.',
+        recomendacao: 'Use os produtos em momentos separados, com enxágue entre as aplicações e ambiente ventilado.'
+    },
+    {
+        a: 'sabao_coco_liquido',
+        b: 'vinagre',
+        severidade: 'ineficaz',
+        titulo: 'Sabão de coco líquido + Vinagre',
+        mensagem: 'O vinagre neutraliza a alcalinidade do sabão de coco, anulando o poder de remoção de gordura. A mistura também pode formar grumos de ácidos graxos que deixam resíduo pegajoso.',
+        recomendacao: 'Lave primeiro com o sabão e enxágue. Se for usar vinagre, aplique depois, separadamente.'
+    },
+    {
+        a: 'sabao_neutro_liquido',
+        b: 'vinagre',
+        severidade: 'ineficaz',
+        titulo: 'Sabão neutro líquido + Vinagre',
+        mensagem: 'A acidez do vinagre neutraliza a fórmula do sabão e reduz a capacidade de remover gordura. A combinação ainda pode embranquecer e turvar a mistura por precipitação dos tensoativos.',
+        recomendacao: 'Use em momentos separados — sabão para limpar, vinagre depois, em outra aplicação.'
     }
 ];
 
@@ -138,7 +202,7 @@ const TOTAL_PASSOS = 4;
 // Versão da tabela INCOMPATIBILIDADES — incrementar quando adicionar pares
 // críticos (perigo). Quem está em 'silenciar' é revertido para 'avisar' uma
 // única vez ao detectar versão maior, com toast explicativo.
-const VERSAO_INCOMPATIBILIDADES = 1;
+const VERSAO_INCOMPATIBILIDADES = 2;
 
 // Quantas vezes o usuário precisa marcar "Estou ciente" antes de o link
 // "ajustar como os alertas aparecem" aparecer no banner. Revelação progressiva
