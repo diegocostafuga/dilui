@@ -2,7 +2,7 @@
 
 > Documento estratégico, alta granularidade. Para o backlog operacional ver as **[Issues](https://github.com/diegocostafuga/dilui/issues)**.
 
-**Estágio atual:** Prototipagem inicial (cliente apenas, localStorage, sem backend) · _atualizado em 06 de maio de 2026_
+**Estágio atual:** Prototipagem inicial (cliente apenas, localStorage, sem backend) · _atualizado em 07 de maio de 2026_
 
 ---
 
@@ -35,8 +35,7 @@
 A lista canônica está nas issues. Aqui só o panorama:
 
 1. **Curadoria técnica dos pares de incompatibilidade** ([#7](https://github.com/diegocostafuga/dilui/issues/7)) — bloqueia o lançamento público; precisa fontes (Anvisa, FISPQ, NIOSH)
-2. **Preferência configurável de bloqueio + revelação progressiva** ([#8](https://github.com/diegocostafuga/dilui/issues/8)) — autonomia para uso profissional
-3. **Calculadora de custos / orçamento** ([#9](https://github.com/diegocostafuga/dilui/issues/9)) — feature de alto valor percebido
+2. **Calculadora de custos / orçamento** ([#9](https://github.com/diegocostafuga/dilui/issues/9)) — feature de alto valor percebido
 
 Tudo abaixo de `priority:p3` é polimento e fica para depois da tração inicial.
 
