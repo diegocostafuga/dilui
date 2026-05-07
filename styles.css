@@ -164,6 +164,23 @@ button:focus-visible {
     display: flex;
     align-items: center;
     gap: var(--space-3);
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: opacity var(--transition);
+}
+
+.logo:hover { opacity: 0.85; }
+
+.logo:focus-visible {
+    outline: 2px solid var(--teal-500);
+    outline-offset: 4px;
 }
 
 .logo-icon {
@@ -183,7 +200,12 @@ button:focus-visible {
     height: 22px;
 }
 
-.logo-text h1 {
+.logo-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.logo-title {
     font-size: 1.375rem;
     font-weight: 800;
     color: var(--gray-900);
