@@ -189,12 +189,14 @@ const dom = {
 
     // Conta e auth
     accountBtn: document.getElementById('accountBtn'),
-    accountBtnGuest: document.getElementById('accountBtnGuest'),
-    accountBtnLogged: document.getElementById('accountBtnLogged'),
     accountAvatar: document.getElementById('accountAvatar'),
     accountMenu: document.getElementById('accountMenu'),
+    accountMenuHeader: document.getElementById('accountMenuHeader'),
     accountMenuName: document.getElementById('accountMenuName'),
     accountMenuEmail: document.getElementById('accountMenuEmail'),
+    menuItemEntrar: document.getElementById('menuItemEntrar'),
+    menuItemHistorico: document.getElementById('menuItemHistorico'),
+    menuItemLogout: document.getElementById('menuItemLogout'),
 
     // Modal de auth
     authModal: document.getElementById('authModal'),
@@ -998,15 +1000,18 @@ function atualizarUIConta() {
     const usuario = window.DiluiStorage.Auth.usuarioAtual();
 
     if (usuario) {
-        dom.accountBtnGuest.hidden = true;
-        dom.accountBtnLogged.hidden = false;
+        dom.accountMenuHeader.hidden = false;
+        dom.menuItemEntrar.hidden = true;
+        dom.menuItemHistorico.hidden = false;
+        dom.menuItemLogout.hidden = false;
         dom.accountAvatar.textContent = usuario.nome.charAt(0);
         dom.accountMenuName.textContent = usuario.nome;
         dom.accountMenuEmail.textContent = usuario.email;
     } else {
-        dom.accountBtnGuest.hidden = false;
-        dom.accountBtnLogged.hidden = true;
-        dom.accountMenu.hidden = true;
+        dom.accountMenuHeader.hidden = true;
+        dom.menuItemEntrar.hidden = false;
+        dom.menuItemHistorico.hidden = true;
+        dom.menuItemLogout.hidden = true;
     }
 
     renderizarProdutos();
@@ -1086,8 +1091,23 @@ function processarCadastro(e) {
 
 function fazerLogout() {
     window.DiluiStorage.Auth.logout();
-    dom.accountMenu.hidden = true;
+    fecharMenuConta();
     atualizarUIConta();
+}
+
+function abrirMenuConta() {
+    dom.accountMenu.hidden = false;
+    dom.accountBtn.setAttribute('aria-expanded', 'true');
+}
+
+function fecharMenuConta() {
+    dom.accountMenu.hidden = true;
+    dom.accountBtn.setAttribute('aria-expanded', 'false');
+}
+
+function alternarMenuConta() {
+    if (dom.accountMenu.hidden) abrirMenuConta();
+    else fecharMenuConta();
 }
 
 // ============================================
@@ -1517,7 +1537,7 @@ function registrarEventos() {
             if (!dom.authModal.hidden) fecharModalAuth();
             else if (!dom.historicoModal.hidden) fecharModalHistorico();
             else if (!dom.settingsModal.hidden) fecharModalConfiguracoes();
-            else if (!dom.accountMenu.hidden) dom.accountMenu.hidden = true;
+            else if (!dom.accountMenu.hidden) fecharMenuConta();
         }
     });
 
@@ -1527,27 +1547,24 @@ function registrarEventos() {
 
     dom.accountBtn.addEventListener('click', e => {
         e.stopPropagation();
-        if (window.DiluiStorage.Auth.estaLogado()) {
-            dom.accountMenu.hidden = !dom.accountMenu.hidden;
-        } else {
-            abrirModalAuth();
-        }
+        alternarMenuConta();
     });
 
     document.addEventListener('click', e => {
         if (!dom.accountMenu.hidden &&
             !dom.accountMenu.contains(e.target) &&
             !dom.accountBtn.contains(e.target)) {
-            dom.accountMenu.hidden = true;
+            fecharMenuConta();
         }
     });
 
     dom.accountMenu.querySelectorAll('[data-menu-action]').forEach(btn => {
         btn.addEventListener('click', () => {
             const acao = btn.dataset.menuAction;
-            dom.accountMenu.hidden = true;
+            fecharMenuConta();
 
-            if (acao === 'historico') abrirModalHistorico();
+            if (acao === 'entrar') abrirModalAuth();
+            else if (acao === 'historico') abrirModalHistorico();
             else if (acao === 'logout') fazerLogout();
         });
     });

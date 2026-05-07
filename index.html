@@ -39,19 +39,49 @@
                 </div>
             </div>
 
-            <!-- Botão de conta — alterna entre "Entrar" (convidado) e avatar (logado) -->
-            <button class="account-btn" id="accountBtn" type="button" aria-label="Conta">
-                <span class="account-btn-guest" id="accountBtnGuest">
+            <!-- Botão hambúrguer — abre o menu da conta -->
+            <button class="account-btn" id="accountBtn" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="accountMenu">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+
+            <!-- Menu dropdown da conta -->
+            <div class="account-menu" id="accountMenu" role="menu" hidden>
+                <!-- Cabeçalho (apenas logado) -->
+                <div class="account-menu-header" id="accountMenuHeader" hidden>
+                    <span class="account-avatar" id="accountAvatar">D</span>
+                    <div class="account-menu-info">
+                        <span class="account-menu-name" id="accountMenuName"></span>
+                        <span class="account-menu-email" id="accountMenuEmail"></span>
+                    </div>
+                </div>
+
+                <!-- Entrar (apenas convidado) -->
+                <button class="account-menu-item" id="menuItemEntrar" data-menu-action="entrar" role="menuitem" type="button">
                     <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                         <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                         <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
                     </svg>
                     <span>Entrar</span>
-                </span>
-                <span class="account-btn-logged" id="accountBtnLogged" hidden>
-                    <span class="account-avatar" id="accountAvatar">D</span>
-                </span>
-            </button>
+                </button>
+
+                <!-- Histórico (apenas logado) -->
+                <button class="account-menu-item" id="menuItemHistorico" data-menu-action="historico" role="menuitem" type="button" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Histórico</span>
+                </button>
+
+                <!-- Sair (apenas logado) -->
+                <button class="account-menu-item" id="menuItemLogout" data-menu-action="logout" role="menuitem" type="button" hidden>
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span>Sair</span>
+                </button>
+            </div>
         </header>
 
         <!-- Barra de progresso (escondida na tela inicial) -->
@@ -352,28 +382,6 @@
                 <span>Configurações de alertas</span>
             </button>
         </footer>
-    </div>
-
-    <!-- ============================================
-         Menu dropdown da conta (logado)
-         ============================================ -->
-    <div class="account-menu" id="accountMenu" hidden>
-        <div class="account-menu-header">
-            <span class="account-menu-name" id="accountMenuName"></span>
-            <span class="account-menu-email" id="accountMenuEmail"></span>
-        </div>
-        <button class="account-menu-item" data-menu-action="historico" type="button">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Histórico</span>
-        </button>
-        <button class="account-menu-item" data-menu-action="logout" type="button">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9M16 17L21 12M21 12L16 7M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Sair</span>
-        </button>
     </div>
 
     <!-- ============================================
