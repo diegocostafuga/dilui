@@ -8,7 +8,7 @@
 // - Bump CACHE_NAME a cada release pra invalidar caches antigos.
 // ============================================
 
-const CACHE_NAME = 'dilui-v2';
+const CACHE_NAME = 'dilui-v3';
 
 const SHELL_ASSETS = [
     './',

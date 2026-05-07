@@ -135,6 +135,16 @@ const INCOMPATIBILIDADES = [
 
 const TOTAL_PASSOS = 4;
 
+// Versão da tabela INCOMPATIBILIDADES — incrementar quando adicionar pares
+// críticos (perigo). Quem está em 'silenciar' é revertido para 'avisar' uma
+// única vez ao detectar versão maior, com toast explicativo.
+const VERSAO_INCOMPATIBILIDADES = 1;
+
+// Quantas vezes o usuário precisa marcar "Estou ciente" antes de o link
+// "ajustar como os alertas aparecem" aparecer no banner. Revelação progressiva
+// evita que alguém clique em "silenciar" no impulso da primeira aparição.
+const LIMIAR_REVELAR_PREFERENCIA = 3;
+
 // ============================================
 // ESTADO DA APLICAÇÃO
 // ============================================
@@ -205,7 +215,13 @@ const dom = {
     historicoModal: document.getElementById('historicoModal'),
     historicoModalClose: document.getElementById('historicoModalClose'),
     historicoList: document.getElementById('historicoList'),
-    historicoEmpty: document.getElementById('historicoEmpty')
+    historicoEmpty: document.getElementById('historicoEmpty'),
+
+    // Modal de configurações de alertas
+    settingsModal: document.getElementById('settingsModal'),
+    settingsModalClose: document.getElementById('settingsModalClose'),
+    settingsForm: document.getElementById('settingsForm'),
+    footerSettingsBtn: document.getElementById('footerSettingsBtn')
 };
 
 // ============================================
@@ -278,7 +294,8 @@ function avancar() {
         // Defesa redundante: o botão já está disabled, mas garante que
         // ninguém fure o bloqueio via Enter ou ferramentas de dev.
         const avisos = verificarIncompatibilidades(estado.produtos);
-        if (temPerigoAtivo(avisos) && !estado.cienteIncompatibilidade) {
+        const prefs = window.DiluiStorage.Preferencias.obter();
+        if (prefs.alertasPerigo === 'bloquear' && temPerigoAtivo(avisos) && !estado.cienteIncompatibilidade) {
             return;
         }
     }
@@ -711,6 +728,13 @@ function renderizarBannerIncompatibilidade(container, avisos, opts = {}) {
 
     if (!container) return;
 
+    const prefs = window.DiluiStorage.Preferencias.obter();
+
+    // Modo 'silenciar' filtra avisos de perigo (cuidado/ineficaz continuam visíveis).
+    if (prefs.alertasPerigo === 'silenciar') {
+        avisos = avisos.filter(a => a.severidade !== 'perigo');
+    }
+
     if (avisos.length === 0) {
         container.hidden = true;
         container.innerHTML = '';
@@ -719,6 +743,14 @@ function renderizarBannerIncompatibilidade(container, avisos, opts = {}) {
 
     const severidade = _maiorSeveridade(avisos);
     const temPerigo = severidade === 'perigo';
+
+    // Checkbox de ciência só faz sentido em modo 'bloquear' com perigo presente.
+    // 'avisar' mostra o banner mas libera Próximo direto (sem checkbox).
+    const exigeCheckbox = incluirCheckbox && temPerigo && prefs.alertasPerigo === 'bloquear';
+
+    // Link "ajustar alertas" só aparece após N confirmações de ciência —
+    // revelação progressiva pra evitar opt-out impulsivo no primeiro encontro.
+    const mostrarLinkAjustar = exigeCheckbox && prefs.vezesCienteContador >= LIMIAR_REVELAR_PREFERENCIA;
 
     container.hidden = false;
     container.className = `incompatibility-banner severity-${severidade}`;
@@ -746,11 +778,17 @@ function renderizarBannerIncompatibilidade(container, avisos, opts = {}) {
         </li>
     `).join('');
 
-    const checkboxHtml = (incluirCheckbox && temPerigo) ? `
+    const checkboxHtml = exigeCheckbox ? `
         <label class="ib-acknowledge">
             <input type="checkbox" id="ibAcknowledge" ${estado.cienteIncompatibilidade ? 'checked' : ''}>
             <span>Entendi os riscos e quero continuar mesmo assim</span>
         </label>
+    ` : '';
+
+    const linkAjustarHtml = mostrarLinkAjustar ? `
+        <button class="ib-link-ajustar" data-action="abrir-config-alertas" type="button">
+            Trabalha com isso com frequência? Ajuste como os alertas aparecem.
+        </button>
     ` : '';
 
     const disclaimerHtml = incluirDisclaimer ? `
@@ -769,15 +807,31 @@ function renderizarBannerIncompatibilidade(container, avisos, opts = {}) {
         </div>
         <ul class="ib-list">${itens}</ul>
         ${checkboxHtml}
+        ${linkAjustarHtml}
         ${disclaimerHtml}
     `;
 
-    if (incluirCheckbox && temPerigo) {
+    if (exigeCheckbox) {
         const checkbox = container.querySelector('#ibAcknowledge');
         checkbox.addEventListener('change', e => {
             estado.cienteIncompatibilidade = e.target.checked;
+            // Incrementa o contador apenas quando passa de unchecked → checked,
+            // para revelar o link de configurações depois de N confirmações reais.
+            if (e.target.checked) {
+                const novoContador = prefs.vezesCienteContador + 1;
+                window.DiluiStorage.Preferencias.atualizar({ vezesCienteContador: novoContador });
+                if (novoContador === LIMIAR_REVELAR_PREFERENCIA) {
+                    // Re-render pra mostrar o link recém-desbloqueado.
+                    setTimeout(atualizarBannerIncompatibilidadePasso2, 0);
+                }
+            }
             atualizarBotoesNavegacao();
         });
+    }
+
+    if (mostrarLinkAjustar) {
+        const linkBtn = container.querySelector('[data-action="abrir-config-alertas"]');
+        if (linkBtn) linkBtn.addEventListener('click', abrirModalConfiguracoes);
     }
 }
 
@@ -797,7 +851,13 @@ function atualizarBotoesNavegacao() {
     const btnPasso2 = document.querySelector('.step[data-step="2"] .btn-primary');
     if (btnPasso2) {
         const avisos = verificarIncompatibilidades(estado.produtos);
-        btnPasso2.disabled = temPerigoAtivo(avisos) && !estado.cienteIncompatibilidade;
+        const prefs = window.DiluiStorage.Preferencias.obter();
+        // Bloqueio só acontece em modo 'bloquear'. 'avisar' e 'silenciar' deixam
+        // o usuário avançar livremente (em 'silenciar' ele nem vê o banner).
+        const bloqueia = prefs.alertasPerigo === 'bloquear' &&
+                         temPerigoAtivo(avisos) &&
+                         !estado.cienteIncompatibilidade;
+        btnPasso2.disabled = bloqueia;
     }
 
     const btnPasso3 = document.querySelector('.step[data-step="3"] .btn-primary');
@@ -1350,6 +1410,61 @@ function mostrarToast(mensagem, duracao = 3000) {
 }
 
 // ============================================
+// CONFIGURAÇÕES DE ALERTAS – UI
+// ============================================
+
+function abrirModalConfiguracoes() {
+    const prefs = window.DiluiStorage.Preferencias.obter();
+    const radio = dom.settingsModal.querySelector(`input[name="alertasPerigo"][value="${prefs.alertasPerigo}"]`);
+    if (radio) radio.checked = true;
+
+    dom.settingsModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharModalConfiguracoes() {
+    dom.settingsModal.hidden = true;
+    document.body.style.overflow = '';
+}
+
+function processarSalvarPreferencias(e) {
+    e.preventDefault();
+    const escolha = dom.settingsForm.querySelector('input[name="alertasPerigo"]:checked');
+    if (!escolha) return;
+
+    window.DiluiStorage.Preferencias.atualizar({ alertasPerigo: escolha.value });
+
+    // Refletir mudança imediatamente no banner / botão atual.
+    if (estado.passoAtual === 2) atualizarBannerIncompatibilidadePasso2();
+    atualizarBotoesNavegacao();
+
+    fecharModalConfiguracoes();
+    mostrarToast('Preferências de alerta salvas');
+}
+
+// Quando publicamos um par crítico novo (VERSAO_INCOMPATIBILIDADES sobe), quem
+// está em 'silenciar' precisa ser avisado — senão alguém que silenciou em 2026
+// nunca vê alertas adicionados depois.
+function verificarVersaoIncompatibilidades() {
+    const prefs = window.DiluiStorage.Preferencias.obter();
+    if (prefs.versaoAlertasReconhecida >= VERSAO_INCOMPATIBILIDADES) return;
+
+    if (prefs.alertasPerigo === 'silenciar') {
+        // Reverte para 'avisar' uma única vez. Usuário continua sem o bloqueio
+        // a que estava acostumado, mas volta a ver os alertas atualizados.
+        window.DiluiStorage.Preferencias.atualizar({
+            alertasPerigo: 'avisar',
+            versaoAlertasReconhecida: VERSAO_INCOMPATIBILIDADES
+        });
+        setTimeout(() => mostrarToast('Novos riscos foram catalogados — revise os alertas no rodapé', 6000), 800);
+    } else {
+        window.DiluiStorage.Preferencias.atualizar({
+            versaoAlertasReconhecida: VERSAO_INCOMPATIBILIDADES
+        });
+    }
+}
+
+// ============================================
 // INICIALIZAÇÃO E EVENT LISTENERS
 // ============================================
 
@@ -1401,6 +1516,7 @@ function registrarEventos() {
         if (e.key === 'Escape') {
             if (!dom.authModal.hidden) fecharModalAuth();
             else if (!dom.historicoModal.hidden) fecharModalHistorico();
+            else if (!dom.settingsModal.hidden) fecharModalConfiguracoes();
             else if (!dom.accountMenu.hidden) dom.accountMenu.hidden = true;
         }
     });
@@ -1452,6 +1568,17 @@ function registrarEventos() {
     dom.historicoModal.addEventListener('click', e => {
         if (e.target === dom.historicoModal) fecharModalHistorico();
     });
+
+    // ============================================
+    // CONFIGURAÇÕES DE ALERTAS
+    // ============================================
+
+    dom.footerSettingsBtn.addEventListener('click', abrirModalConfiguracoes);
+    dom.settingsModalClose.addEventListener('click', fecharModalConfiguracoes);
+    dom.settingsModal.addEventListener('click', e => {
+        if (e.target === dom.settingsModal) fecharModalConfiguracoes();
+    });
+    dom.settingsForm.addEventListener('submit', processarSalvarPreferencias);
 }
 
 function inicializar() {
@@ -1460,6 +1587,7 @@ function inicializar() {
     registrarEventos();
     atualizarBotoesNavegacao();
     atualizarUIConta();
+    verificarVersaoIncompatibilidades();
 
     // Se a URL tem ?m=<mistura-codificada>, salta direto pro resultado
     carregarMisturaDeUrl();

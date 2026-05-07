@@ -344,6 +344,13 @@
 
         <footer class="footer">
             <p>Diluí · Cálculos precisos para limpeza eficaz</p>
+            <button class="footer-link" id="footerSettingsBtn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Configurações de alertas</span>
+            </button>
         </footer>
     </div>
 
@@ -456,6 +463,60 @@
                     </svg>
                     <p>Nenhuma mistura ainda.<br>Calcule uma para começar seu histórico!</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         Modal de configurações de alertas
+         ============================================ -->
+    <div class="modal-backdrop" id="settingsModal" hidden>
+        <div class="modal" role="dialog" aria-labelledby="settingsModalTitle" aria-modal="true">
+            <button class="modal-close" id="settingsModalClose" type="button" aria-label="Fechar">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+
+            <div class="modal-body">
+                <h3 class="modal-title" id="settingsModalTitle">Configurações de alertas</h3>
+                <p class="modal-subtitle">Como o app deve reagir quando você selecionar uma combinação <strong>perigosa</strong>.</p>
+
+                <form class="auth-form" id="settingsForm">
+                    <label class="settings-option">
+                        <input type="radio" name="alertasPerigo" value="bloquear" checked>
+                        <div class="settings-option-text">
+                            <strong>Bloquear até confirmar <span class="settings-recommended">(recomendado)</span></strong>
+                            <p>Mostra aviso e exige checkbox "Estou ciente" antes de avançar. Mais seguro pra uso doméstico.</p>
+                        </div>
+                    </label>
+
+                    <label class="settings-option">
+                        <input type="radio" name="alertasPerigo" value="avisar">
+                        <div class="settings-option-text">
+                            <strong>Apenas avisar</strong>
+                            <p>Mostra o banner mas libera o avanço direto. Ideal pra quem trabalha com química com frequência.</p>
+                        </div>
+                    </label>
+
+                    <label class="settings-option">
+                        <input type="radio" name="alertasPerigo" value="silenciar">
+                        <div class="settings-option-text">
+                            <strong>Não mostrar</strong>
+                            <p>Esconde alertas de combinação perigosa. Avisos de "cuidado" e "ineficaz" continuam visíveis.</p>
+                        </div>
+                    </label>
+
+                    <button type="submit" class="btn-primary">Salvar</button>
+                </form>
+
+                <p class="auth-disclaimer">
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Você pode mudar essa preferência a qualquer momento. Avisos informativos, não substituem orientação técnica.</span>
+                </p>
             </div>
         </div>
     </div>

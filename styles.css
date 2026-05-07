@@ -1802,6 +1802,123 @@ button:focus-visible {
     font-style: italic;
 }
 
+/* Link discreto que aparece no banner após N confirmações de ciência. */
+.ib-link-ajustar {
+    display: block;
+    width: 100%;
+    margin-top: var(--space-3);
+    padding: var(--space-2);
+    background: transparent;
+    border: none;
+    color: var(--gray-600);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-align: center;
+    cursor: pointer;
+    transition: color var(--transition);
+}
+
+.ib-link-ajustar:hover {
+    color: var(--gray-900);
+}
+
+/* ============================================
+   Configurações de alertas (modal)
+   ============================================ */
+
+.settings-option {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.settings-option:hover {
+    border-color: var(--teal-200);
+    background: var(--teal-50);
+}
+
+.settings-option:has(input:checked) {
+    border-color: var(--teal-500);
+    background: var(--teal-50);
+    box-shadow: 0 0 0 3px var(--teal-100);
+}
+
+.settings-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    accent-color: var(--teal-500);
+    cursor: pointer;
+}
+
+.settings-option-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-option-text strong {
+    display: block;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+    letter-spacing: -0.01em;
+}
+
+.settings-option-text p {
+    font-size: 0.8125rem;
+    color: var(--gray-600);
+    line-height: 1.5;
+}
+
+.settings-recommended {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--teal-700);
+    background: var(--teal-100);
+    padding: 1px 6px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-left: var(--space-1);
+    vertical-align: 1px;
+}
+
+/* ============================================
+   Footer link de configurações
+   ============================================ */
+
+.footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    background: transparent;
+    color: var(--gray-500);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    transition: color var(--transition);
+}
+
+.footer-link:hover {
+    color: var(--gray-700);
+}
+
+.footer-link svg {
+    width: 12px;
+    height: 12px;
+}
+
 /* ============================================
    Modo standalone (PWA instalada)
    ============================================ */

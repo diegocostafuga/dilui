@@ -16,7 +16,9 @@ const STORAGE_KEYS = {
     USERS: 'dilui_users',
     SESSION: 'dilui_session',
     HISTORICO_PREFIX: 'dilui_historico_',
-    FAVORITOS_PREFIX: 'dilui_favoritos_'
+    FAVORITOS_PREFIX: 'dilui_favoritos_',
+    PREFERENCIAS_PREFIX: 'dilui_preferencias_',
+    PREFERENCIAS_CONVIDADO: 'dilui_preferencias_convidado'
 };
 
 const MAX_HISTORICO = 20;
@@ -241,11 +243,45 @@ const Favoritos = {
 };
 
 // ============================================
+// PREFERÊNCIAS DO USUÁRIO
+// ============================================
+//
+// Funciona para convidado (chave fixa) e logado (chave por usuário).
+// Defaults seguros: bloquear em perigo, contador zerado, versão zero.
+
+const Preferencias = {
+    _chave() {
+        const usuario = Auth.usuarioAtual();
+        if (usuario) return STORAGE_KEYS.PREFERENCIAS_PREFIX + usuario.usuarioId;
+        return STORAGE_KEYS.PREFERENCIAS_CONVIDADO;
+    },
+
+    _padrao() {
+        return {
+            alertasPerigo: 'bloquear',
+            vezesCienteContador: 0,
+            versaoAlertasReconhecida: 0
+        };
+    },
+
+    obter() {
+        return { ...this._padrao(), ..._ler(this._chave(), {}) };
+    },
+
+    atualizar(parcial) {
+        const novo = { ...this.obter(), ...parcial };
+        _gravar(this._chave(), novo);
+        return novo;
+    }
+};
+
+// ============================================
 // EXPOSIÇÃO PÚBLICA
 // ============================================
 
 window.DiluiStorage = {
     Auth,
     Historico,
-    Favoritos
+    Favoritos,
+    Preferencias
 };
