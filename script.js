@@ -222,8 +222,7 @@ const dom = {
     // Modal de configurações de alertas
     settingsModal: document.getElementById('settingsModal'),
     settingsModalClose: document.getElementById('settingsModalClose'),
-    settingsForm: document.getElementById('settingsForm'),
-    footerSettingsBtn: document.getElementById('footerSettingsBtn')
+    settingsForm: document.getElementById('settingsForm')
 };
 
 // ============================================
@@ -1565,6 +1564,7 @@ function registrarEventos() {
 
             if (acao === 'entrar') abrirModalAuth();
             else if (acao === 'historico') abrirModalHistorico();
+            else if (acao === 'configuracoes') abrirModalConfiguracoes();
             else if (acao === 'logout') fazerLogout();
         });
     });
@@ -1590,7 +1590,6 @@ function registrarEventos() {
     // CONFIGURAÇÕES DE ALERTAS
     // ============================================
 
-    dom.footerSettingsBtn.addEventListener('click', abrirModalConfiguracoes);
     dom.settingsModalClose.addEventListener('click', fecharModalConfiguracoes);
     dom.settingsModal.addEventListener('click', e => {
         if (e.target === dom.settingsModal) fecharModalConfiguracoes();
