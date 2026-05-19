@@ -8,6 +8,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The UI, comments, and identifiers throughout the codebase are in **Portuguese (pt-BR)**. Match the existing language when adding code; mixing English identifiers into the Portuguese codebase reads as inconsistent.
 
+## Git workflow
+
+Duas branches de longa duração:
+
+- **`main`** — produção. O Vercel faz deploy automático a cada push. **Nunca editar diretamente.**
+- **`dev`** — desenvolvimento ativo. Todo código novo entra aqui primeiro.
+
+**Antes de qualquer modificação de código**, verificar a branch atual:
+
+```bash
+git branch --show-current
+```
+
+Se não estiver em `dev`, avisar o usuário e aguardar confirmação antes de prosseguir. Commits diretos em `main` são proibidos — mudanças chegam a `main` apenas via Pull Request aberto a partir de `dev`, após revisão e testes.
+
 ## Stack & commands
 
 Pure static site — no build step, no package manager, no tests. Three files do everything: [index.html](index.html), [script.js](script.js), [styles.css](styles.css).
