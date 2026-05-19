@@ -1,0 +1,28 @@
+{
+  "name": "calculator-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diegocostafuga/dilui.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/diegocostafuga/dilui/issues"
+  },
+  "homepage": "https://github.com/diegocostafuga/dilui#readme",
+  "devDependencies": {
+    "vitest": "^4.1.6"
+  }
+}
